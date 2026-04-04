@@ -1,5 +1,5 @@
 <template>
-  <div class="md:hidden space-y-3">
+  <div v-if="isMobile" class="space-y-3">
     <template v-if="loading">
       <div v-for="i in 5" :key="i" class="rounded-lg border border-gray-200 bg-white p-4 dark:border-dark-700 dark:bg-dark-900">
         <div class="space-y-3">
@@ -61,8 +61,9 @@
   </div>
 
   <div
+    v-else
     ref="tableWrapperRef"
-    class="table-wrapper hidden md:block"
+    class="table-wrapper"
     :class="{
       'actions-expanded': actionsExpanded,
       'is-scrollable': isScrollable
@@ -189,9 +190,16 @@ const emit = defineEmits<{
 const tableWrapperRef = ref<HTMLElement | null>(null)
 const isScrollable = ref(false)
 const actionsColumnNeedsExpanding = ref(false)
+const isMobile = ref(false)
+
+const syncViewport = () => {
+  if (typeof window === 'undefined') return
+  isMobile.value = window.innerWidth < 768
+}
 
 // 检查是否可滚动
 const checkScrollable = () => {
+  if (isMobile.value) return
   if (tableWrapperRef.value) {
     isScrollable.value = tableWrapperRef.value.scrollWidth > tableWrapperRef.value.clientWidth
   }
@@ -199,6 +207,7 @@ const checkScrollable = () => {
 
 // 检查操作列是否需要展开
 const checkActionsColumnWidth = () => {
+  if (isMobile.value) return
   if (!tableWrapperRef.value) return
 
   // 查找第一行的操作列单元格
@@ -246,31 +255,53 @@ const checkActionsColumnWidth = () => {
 // 监听尺寸变化
 let resizeObserver: ResizeObserver | null = null
 let resizeHandler: (() => void) | null = null
+let viewportResizeHandler: (() => void) | null = null
 
-onMounted(() => {
+const teardownDesktopObservers = () => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler)
+    resizeHandler = null
+  }
+}
+
+const setupDesktopObservers = () => {
+  if (isMobile.value || !tableWrapperRef.value) return
+
   checkScrollable()
   checkActionsColumnWidth()
-  if (tableWrapperRef.value && typeof ResizeObserver !== 'undefined') {
+
+  if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
       checkScrollable()
       checkActionsColumnWidth()
     })
     resizeObserver.observe(tableWrapperRef.value)
-  } else {
-    // 降级方案：不支持 ResizeObserver 时使用 window resize
-    resizeHandler = () => {
-      checkScrollable()
-      checkActionsColumnWidth()
-    }
-    window.addEventListener('resize', resizeHandler)
+    return
   }
+
+  resizeHandler = () => {
+    checkScrollable()
+    checkActionsColumnWidth()
+  }
+  window.addEventListener('resize', resizeHandler)
+}
+
+onMounted(() => {
+  syncViewport()
+  viewportResizeHandler = () => {
+    syncViewport()
+  }
+  window.addEventListener('resize', viewportResizeHandler)
 })
 
 onUnmounted(() => {
-  resizeObserver?.disconnect()
-  if (resizeHandler) {
-    window.removeEventListener('resize', resizeHandler)
-    resizeHandler = null
+  teardownDesktopObservers()
+  if (viewportResizeHandler) {
+    window.removeEventListener('resize', viewportResizeHandler)
+    viewportResizeHandler = null
   }
 })
 
@@ -446,6 +477,21 @@ const columnsSignature = computed(() =>
 
 // 数据/列变化时重新检查滚动状态
 // 注意：不能监听 actionsExpanded，因为 checkActionsColumnWidth 会临时修改它，会导致无限循环
+watch(
+  [isMobile, tableWrapperRef],
+  async ([mobile]) => {
+    teardownDesktopObservers()
+    isScrollable.value = false
+    actionsColumnNeedsExpanding.value = false
+
+    if (mobile) return
+
+    await nextTick()
+    setupDesktopObservers()
+  },
+  { flush: 'post' }
+)
+
 watch(
   [() => props.data.length, columnsSignature],
   async () => {
