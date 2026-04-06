@@ -696,7 +696,6 @@ func TestConstants_值正确(t *testing.T) {
 	if !strings.Contains(GetUserAgent(), GetUserAgentVersion()) {
 		t.Errorf("UserAgent 应包含版本号 %s: got %s", GetUserAgentVersion(), GetUserAgent())
 	}
-	}
 	if SessionTTL != 30*time.Minute {
 		t.Errorf("SessionTTL 不匹配: got %v", SessionTTL)
 	}

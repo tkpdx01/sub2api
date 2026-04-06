@@ -53,10 +53,11 @@ const (
 )
 
 // defaultUserAgentVersion 可通过环境变量 ANTIGRAVITY_USER_AGENT_VERSION 配置。
-// 确保不低于 Google API 的最低版本要求。
+// 真实 Antigravity IDE 版本号为 1.x.x 系列，此处故意使用高于真实版本的号码
+// 以绕过 Google API 的最低版本检查（与第三方工具常用策略一致）。
 var defaultUserAgentVersion = "4.1.31"
 
-// Electron/Chrome 版本，与 Antigravity 4.1.31 对应
+// Electron/Chrome 版本，用于构造 Electron 风格 User-Agent
 const (
 	knownStableElectron = "39.2.3"
 	knownStableChrome   = "132.0.6834.160"
