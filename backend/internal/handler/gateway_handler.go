@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -186,6 +187,13 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 	// 验证 model 必填
 	if reqModel == "" {
 		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "model is required")
+		return
+	}
+
+	// 万能 Key: 模型白名单校验 + 多分组路由
+	if h.resolveMultiGroupRouting(c, apiKey, reqModel) {
+		h.errorResponse(c, http.StatusForbidden, "invalid_request_error",
+			fmt.Sprintf("model %q is not allowed by this API key", reqModel))
 		return
 	}
 
@@ -1774,4 +1782,49 @@ func (h *GatewayHandler) getUserMsgQueueMode(account *service.Account, parsed *s
 		mode = h.cfg.Gateway.UserMessageQueue.GetEffectiveMode()
 	}
 	return mode
+}
+
+// resolveMultiGroupRouting resolves the group for multi-group API keys based on the requested model.
+// If the API key has GroupIDs configured and GroupID is nil, it picks the best-matching group.
+// Returns true if the model is blocked by AllowedModels whitelist.
+func (h *GatewayHandler) resolveMultiGroupRouting(c *gin.Context, apiKey *service.APIKey, reqModel string) (blocked bool) {
+	return resolveMultiGroupRoutingCommon(c, apiKey, reqModel, h.gatewayService)
+}
+
+// multiGroupResolver abstracts the group resolution methods needed for multi-group routing.
+type multiGroupResolver interface {
+	ResolveGroupForModel(ctx context.Context, groupIDs []int64, requestedModel string) (*int64, error)
+	ResolveGroupByID(ctx context.Context, groupID int64) (*service.Group, error)
+}
+
+// resolveMultiGroupRoutingCommon is the shared implementation for multi-group routing.
+func resolveMultiGroupRoutingCommon(c *gin.Context, apiKey *service.APIKey, reqModel string, resolver multiGroupResolver) bool {
+	// 模型白名单校验
+	if !service.MatchAllowedModels(apiKey.AllowedModels, reqModel) {
+		return true
+	}
+
+	// 多分组路由
+	if apiKey.GroupID == nil && len(apiKey.GroupIDs) > 0 {
+		if resolver != nil {
+			resolvedGroupID, err := resolver.ResolveGroupForModel(c.Request.Context(), apiKey.GroupIDs, reqModel)
+			if err != nil {
+				slog.Warn("gateway.multi_group_resolve_failed", "error", err)
+			}
+			if resolvedGroupID != nil {
+				apiKey.GroupID = resolvedGroupID
+				group, err := resolver.ResolveGroupByID(c.Request.Context(), *resolvedGroupID)
+				if err == nil && group != nil {
+					apiKey.Group = group
+					ctx := context.WithValue(c.Request.Context(), ctxkey.Group, group)
+					c.Request = c.Request.WithContext(ctx)
+				}
+			}
+		} else {
+			// No resolver available — use the first group as fallback
+			first := apiKey.GroupIDs[0]
+			apiKey.GroupID = &first
+		}
+	}
+	return false
 }

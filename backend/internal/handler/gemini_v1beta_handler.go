@@ -164,6 +164,12 @@ func (h *GatewayHandler) GeminiV1BetaModels(c *gin.Context) {
 		return
 	}
 
+	// 万能 Key: 模型白名单校验 + 多分组路由
+	if h.resolveMultiGroupRouting(c, apiKey, modelName) {
+		googleError(c, http.StatusForbidden, "model is not allowed by this API key")
+		return
+	}
+
 	stream := action == "streamGenerateContent"
 	reqLog = reqLog.With(zap.String("model", modelName), zap.String("action", action), zap.Bool("stream", stream))
 

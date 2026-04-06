@@ -1920,6 +1920,97 @@ func (s *GatewayService) resolveGatewayGroup(ctx context.Context, groupID *int64
 	}
 }
 
+// MatchAllowedModels checks if the requestedModel matches any pattern in allowedModels.
+// Returns true if allowedModels is empty (no restriction) or if any pattern matches.
+// Patterns support trailing * wildcards (e.g. "claude-*" matches "claude-opus-4-20250514").
+func MatchAllowedModels(allowedModels []string, requestedModel string) bool {
+	if len(allowedModels) == 0 {
+		return true
+	}
+	for _, pattern := range allowedModels {
+		if matchModelPattern(pattern, requestedModel) {
+			return true
+		}
+	}
+	return false
+}
+
+// ResolveGroupForModel iterates through groupIDs and returns the first group
+// whose platform is compatible with the requested model.
+// If no match is found, returns nil (caller should fall back to default behavior).
+func (s *GatewayService) ResolveGroupForModel(ctx context.Context, groupIDs []int64, requestedModel string) (*int64, error) {
+	if len(groupIDs) == 0 || requestedModel == "" {
+		return nil, nil
+	}
+
+	for _, gid := range groupIDs {
+		group, resolvedID, err := s.resolveGatewayGroup(ctx, &gid)
+		if err != nil {
+			slog.Warn("resolve_group_for_model_skip",
+				"group_id", gid,
+				"error", err)
+			continue
+		}
+		if group == nil {
+			continue
+		}
+
+		// Check if the group's platform is compatible with the requested model
+		if s.isGroupCompatibleWithModel(group, requestedModel) {
+			return resolvedID, nil
+		}
+	}
+
+	// No matching group found — return the first valid group as fallback
+	for _, gid := range groupIDs {
+		copyID := gid
+		return &copyID, nil
+	}
+	return nil, nil
+}
+
+// isGroupCompatibleWithModel checks if a group can serve the requested model based on platform.
+func (s *GatewayService) isGroupCompatibleWithModel(group *Group, requestedModel string) bool {
+	model := strings.ToLower(requestedModel)
+
+	switch group.Platform {
+	case PlatformAnthropic:
+		// Anthropic groups serve claude-* models
+		return strings.HasPrefix(model, "claude")
+	case PlatformGemini:
+		// Gemini groups serve gemini-* models
+		return strings.HasPrefix(model, "gemini")
+	case PlatformAntigravity:
+		// Antigravity groups can serve both claude and gemini models
+		// Check SupportedModelScopes if configured
+		if len(group.SupportedModelScopes) > 0 {
+			for _, scope := range group.SupportedModelScopes {
+				switch scope {
+				case "claude":
+					if strings.HasPrefix(model, "claude") {
+						return true
+					}
+				case "gemini_text", "gemini_image":
+					if strings.HasPrefix(model, "gemini") {
+						return true
+					}
+				}
+			}
+			return false
+		}
+		// No scope restriction — antigravity supports all models
+		return true
+	case PlatformOpenAI:
+		// OpenAI groups serve gpt-*, o1-*, o3-*, chatgpt-* models
+		return strings.HasPrefix(model, "gpt") ||
+			strings.HasPrefix(model, "o1") ||
+			strings.HasPrefix(model, "o3") ||
+			strings.HasPrefix(model, "chatgpt")
+	default:
+		return true
+	}
+}
+
 // checkClaudeCodeRestriction 检查分组的 Claude Code 客户端限制
 // 如果分组启用了 claude_code_only 且请求不是来自 Claude Code 客户端：
 //   - 有降级分组：返回降级分组的 ID
