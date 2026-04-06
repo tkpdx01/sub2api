@@ -29,6 +29,10 @@ const (
 	FieldName = "name"
 	// FieldGroupID holds the string denoting the group_id field in the database.
 	FieldGroupID = "group_id"
+	// FieldGroupIds holds the string denoting the group_ids field in the database.
+	FieldGroupIds = "group_ids"
+	// FieldAllowedModels holds the string denoting the allowed_models field in the database.
+	FieldAllowedModels = "allowed_models"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldLastUsedAt holds the string denoting the last_used_at field in the database.
@@ -102,6 +106,8 @@ var Columns = []string{
 	FieldKey,
 	FieldName,
 	FieldGroupID,
+	FieldGroupIds,
+	FieldAllowedModels,
 	FieldStatus,
 	FieldLastUsedAt,
 	FieldIPWhitelist,

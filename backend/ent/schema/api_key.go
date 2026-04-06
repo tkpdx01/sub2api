@@ -44,6 +44,12 @@ func (APIKey) Fields() []ent.Field {
 		field.Int64("group_id").
 			Optional().
 			Nillable(),
+		field.JSON("group_ids", []int64{}).
+			Optional().
+			Comment("Bound Group ID list for multi-group routing; empty means use group_id or default"),
+		field.JSON("allowed_models", []string{}).
+			Optional().
+			Comment("Allowed model patterns (supports wildcards like claude-*); empty means no restriction"),
 		field.String("status").
 			MaxLen(20).
 			Default(domain.StatusActive),

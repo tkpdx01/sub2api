@@ -55,6 +55,12 @@ func (r *apiKeyRepository) Create(ctx context.Context, key *service.APIKey) erro
 	if len(key.IPBlacklist) > 0 {
 		builder.SetIPBlacklist(key.IPBlacklist)
 	}
+	if len(key.GroupIDs) > 0 {
+		builder.SetGroupIds(key.GroupIDs)
+	}
+	if len(key.AllowedModels) > 0 {
+		builder.SetAllowedModels(key.AllowedModels)
+	}
 
 	created, err := builder.Save(ctx)
 	if err == nil {
@@ -122,6 +128,8 @@ func (r *apiKeyRepository) GetByKeyForAuth(ctx context.Context, key string) (*se
 			apikey.FieldID,
 			apikey.FieldUserID,
 			apikey.FieldGroupID,
+			apikey.FieldGroupIds,
+			apikey.FieldAllowedModels,
 			apikey.FieldStatus,
 			apikey.FieldIPWhitelist,
 			apikey.FieldIPBlacklist,
@@ -237,6 +245,18 @@ func (r *apiKeyRepository) Update(ctx context.Context, key *service.APIKey) erro
 		builder.SetIPBlacklist(key.IPBlacklist)
 	} else {
 		builder.ClearIPBlacklist()
+	}
+
+	// Multi-group and allowed models
+	if len(key.GroupIDs) > 0 {
+		builder.SetGroupIds(key.GroupIDs)
+	} else {
+		builder.ClearGroupIds()
+	}
+	if len(key.AllowedModels) > 0 {
+		builder.SetAllowedModels(key.AllowedModels)
+	} else {
+		builder.ClearAllowedModels()
 	}
 
 	affected, err := builder.Save(ctx)
@@ -577,6 +597,8 @@ func apiKeyEntityToService(m *dbent.APIKey) *service.APIKey {
 		CreatedAt:     m.CreatedAt,
 		UpdatedAt:     m.UpdatedAt,
 		GroupID:       m.GroupID,
+		GroupIDs:      m.GroupIds,
+		AllowedModels: m.AllowedModels,
 		Quota:         m.Quota,
 		QuotaUsed:     m.QuotaUsed,
 		ExpiresAt:     m.ExpiresAt,

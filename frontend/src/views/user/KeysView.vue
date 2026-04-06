@@ -105,6 +105,9 @@
                   :rate-multiplier="row.group.rate_multiplier"
                   :user-rate-multiplier="userGroupRates[row.group.id]"
                 />
+                <template v-else-if="row.group_ids && row.group_ids.length > 0">
+                  <span class="text-xs font-medium text-primary-600 dark:text-primary-400">{{ row.group_ids.length }} {{ t('keys.groupsCount') }}</span>
+                </template>
                 <span v-else class="text-sm text-gray-400 dark:text-dark-500">{{
                   t('keys.noGroup')
                 }}</span>
@@ -397,8 +400,28 @@
         </div>
 
         <div>
-          <label class="input-label">{{ t('keys.groupLabel') }}</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="input-label mb-0">{{ t('keys.groupLabel') }}</label>
+            <button
+              type="button"
+              @click="formData.group_ids.length > 0 ? (formData.group_ids = [], formData.group_id = null) : (formData.group_id = null)"
+              class="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+              v-if="formData.group_ids.length > 0"
+            >
+              {{ t('keys.switchToSingleGroup') }}
+            </button>
+            <button
+              type="button"
+              @click="formData.group_ids = formData.group_id ? [formData.group_id] : []; formData.group_id = null"
+              class="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+              v-else
+            >
+              {{ t('keys.switchToMultiGroup') }}
+            </button>
+          </div>
+          <!-- Single group mode -->
           <Select
+            v-if="formData.group_ids.length === 0"
             v-model="formData.group_id"
             :options="groupOptions"
             :placeholder="t('keys.selectGroup')"
@@ -429,6 +452,43 @@
               />
             </template>
           </Select>
+          <!-- Multi-group mode -->
+          <div v-else class="space-y-2">
+            <div class="max-h-48 overflow-y-auto border border-gray-200 dark:border-dark-600 rounded-lg p-2 space-y-1">
+              <label
+                v-for="group in groups"
+                :key="group.id"
+                class="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 dark:hover:bg-dark-600 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  :value="group.id"
+                  v-model="formData.group_ids"
+                  class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <GroupBadge
+                  :name="group.name"
+                  :platform="group.platform"
+                  :subscription-type="group.subscription_type"
+                  :rate-multiplier="group.rate_multiplier"
+                  :user-rate-multiplier="userGroupRates[group.id] ?? null"
+                />
+              </label>
+            </div>
+            <p class="input-hint">{{ t('keys.multiGroupHint') }}</p>
+          </div>
+        </div>
+
+        <!-- Allowed Models (visible in multi-group mode) -->
+        <div v-if="formData.group_ids.length > 0">
+          <label class="input-label">{{ t('keys.allowedModelsLabel') }}</label>
+          <input
+            v-model="formData.allowed_models"
+            type="text"
+            class="input font-mono text-sm"
+            :placeholder="t('keys.allowedModelsPlaceholder')"
+          />
+          <p class="input-hint">{{ t('keys.allowedModelsHint') }}</p>
         </div>
 
         <!-- Custom Key Section (only for create) -->
@@ -1154,6 +1214,8 @@ const setGroupButtonRef = (keyId: number, el: Element | ComponentPublicInstance 
 const formData = ref({
   name: '',
   group_id: null as number | null,
+  group_ids: [] as number[],
+  allowed_models: '',
   status: 'active' as 'active' | 'inactive',
   use_custom_key: false,
   custom_key: '',
@@ -1367,6 +1429,8 @@ const editKey = (key: ApiKey) => {
   formData.value = {
     name: key.name,
     group_id: key.group_id,
+    group_ids: key.group_ids || [],
+    allowed_models: (key.allowed_models || []).join(', '),
     status: key.status === 'quota_exhausted' || key.status === 'expired' ? 'inactive' : key.status,
     use_custom_key: false,
     custom_key: '',
@@ -1459,8 +1523,9 @@ const confirmDelete = (key: ApiKey) => {
 }
 
 const handleSubmit = async () => {
-  // Validate group_id is required
-  if (formData.value.group_id === null) {
+  // Validate: either group_id or group_ids must be set
+  const isMultiGroup = formData.value.group_ids.length > 0
+  if (!isMultiGroup && formData.value.group_id === null) {
     appStore.showError(t('keys.groupRequired'))
     return
   }
@@ -1512,12 +1577,18 @@ const handleSubmit = async () => {
     rate_limit_7d: formData.value.rate_limit_7d && formData.value.rate_limit_7d > 0 ? formData.value.rate_limit_7d : 0,
   } : { rate_limit_5h: 0, rate_limit_1d: 0, rate_limit_7d: 0 }
 
+  // Parse allowed models
+  const allowedModels = formData.value.allowed_models
+    .split(',').map(m => m.trim()).filter(m => m.length > 0)
+
   submitting.value = true
   try {
     if (showEditModal.value && selectedKey.value) {
       await keysAPI.update(selectedKey.value.id, {
         name: formData.value.name,
-        group_id: formData.value.group_id,
+        group_id: isMultiGroup ? null : formData.value.group_id,
+        group_ids: isMultiGroup ? formData.value.group_ids : [],
+        allowed_models: allowedModels,
         status: formData.value.status,
         ip_whitelist: ipWhitelist,
         ip_blacklist: ipBlacklist,
@@ -1532,13 +1603,15 @@ const handleSubmit = async () => {
       const customKey = formData.value.use_custom_key ? formData.value.custom_key : undefined
       await keysAPI.create(
         formData.value.name,
-        formData.value.group_id,
+        isMultiGroup ? null : formData.value.group_id,
         customKey,
         ipWhitelist,
         ipBlacklist,
         quota,
         expiresInDays,
-        rateLimitData
+        rateLimitData,
+        isMultiGroup ? formData.value.group_ids : undefined,
+        allowedModels.length > 0 ? allowedModels : undefined
       )
       appStore.showSuccess(t('keys.keyCreatedSuccess'))
       // Only advance tour if active, on submit step, and creation succeeded
@@ -1584,6 +1657,8 @@ const closeModals = () => {
   formData.value = {
     name: '',
     group_id: null,
+    group_ids: [],
+    allowed_models: '',
     status: 'active',
     use_custom_key: false,
     custom_key: '',

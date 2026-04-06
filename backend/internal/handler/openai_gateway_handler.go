@@ -35,6 +35,7 @@ type OpenAIGatewayHandler struct {
 	concurrencyHelper       *ConcurrencyHelper
 	maxAccountSwitches      int
 	cfg                     *config.Config
+	groupResolver           multiGroupResolver // for multi-group key routing
 }
 
 func resolveOpenAIForwardDefaultMappedModel(apiKey *service.APIKey, fallbackModel string) string {
@@ -56,6 +57,7 @@ func NewOpenAIGatewayHandler(
 	usageRecordWorkerPool *service.UsageRecordWorkerPool,
 	errorPassthroughService *service.ErrorPassthroughService,
 	cfg *config.Config,
+	groupResolver multiGroupResolver,
 ) *OpenAIGatewayHandler {
 	pingInterval := time.Duration(0)
 	maxAccountSwitches := 3
@@ -74,6 +76,7 @@ func NewOpenAIGatewayHandler(
 		concurrencyHelper:       NewConcurrencyHelper(concurrencyService, SSEPingFormatComment, pingInterval),
 		maxAccountSwitches:      maxAccountSwitches,
 		cfg:                     cfg,
+		groupResolver:           groupResolver,
 	}
 }
 
@@ -184,6 +187,13 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 
 	setOpsRequestContext(c, reqModel, reqStream, body)
 	setOpsEndpointContext(c, "", int16(service.RequestTypeFromLegacy(reqStream, false)))
+
+	// 万能 Key: 模型白名单校验 + 多分组路由
+	if h.resolveMultiGroupRouting(c, apiKey, reqModel) {
+		h.errorResponse(c, http.StatusForbidden, "invalid_request_error",
+			"model is not allowed by this API key")
+		return
+	}
 
 	// 解析渠道级模型映射
 	channelMapping, _ := h.gatewayService.ResolveChannelMappingAndRestrict(c.Request.Context(), apiKey.GroupID, reqModel)
@@ -1623,4 +1633,11 @@ func summarizeWSCloseErrorForLog(err error) (string, string) {
 		}
 	}
 	return closeStatus, closeReason
+}
+
+// resolveMultiGroupRouting resolves the group for multi-group API keys.
+// For OpenAI handlers, model-based group resolution is skipped (no GatewayService available),
+// but AllowedModels whitelist check and simple first-group selection still apply.
+func (h *OpenAIGatewayHandler) resolveMultiGroupRouting(c *gin.Context, apiKey *service.APIKey, reqModel string) (blocked bool) {
+	return resolveMultiGroupRoutingCommon(c, apiKey, reqModel, h.groupResolver)
 }

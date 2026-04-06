@@ -76,6 +76,13 @@ func (h *OpenAIGatewayHandler) ChatCompletions(c *gin.Context) {
 
 	reqLog = reqLog.With(zap.String("model", reqModel), zap.Bool("stream", reqStream))
 
+	// 万能 Key: 模型白名单校验 + 多分组路由
+	if h.resolveMultiGroupRouting(c, apiKey, reqModel) {
+		h.errorResponse(c, http.StatusForbidden, "invalid_request_error",
+			"model is not allowed by this API key")
+		return
+	}
+
 	setOpsRequestContext(c, reqModel, reqStream, body)
 	setOpsEndpointContext(c, "", int16(service.RequestTypeFromLegacy(reqStream, false)))
 
