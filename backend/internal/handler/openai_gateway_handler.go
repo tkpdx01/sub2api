@@ -35,6 +35,7 @@ type OpenAIGatewayHandler struct {
 	concurrencyHelper       *ConcurrencyHelper
 	maxAccountSwitches      int
 	cfg                     *config.Config
+	groupResolver           multiGroupResolver // for multi-group key routing
 }
 
 func resolveOpenAIForwardDefaultMappedModel(apiKey *service.APIKey, fallbackModel string) string {
@@ -56,6 +57,7 @@ func NewOpenAIGatewayHandler(
 	usageRecordWorkerPool *service.UsageRecordWorkerPool,
 	errorPassthroughService *service.ErrorPassthroughService,
 	cfg *config.Config,
+	groupResolver multiGroupResolver,
 ) *OpenAIGatewayHandler {
 	pingInterval := time.Duration(0)
 	maxAccountSwitches := 3
@@ -74,6 +76,7 @@ func NewOpenAIGatewayHandler(
 		concurrencyHelper:       NewConcurrencyHelper(concurrencyService, SSEPingFormatComment, pingInterval),
 		maxAccountSwitches:      maxAccountSwitches,
 		cfg:                     cfg,
+		groupResolver:           groupResolver,
 	}
 }
 
@@ -1636,5 +1639,5 @@ func summarizeWSCloseErrorForLog(err error) (string, string) {
 // For OpenAI handlers, model-based group resolution is skipped (no GatewayService available),
 // but AllowedModels whitelist check and simple first-group selection still apply.
 func (h *OpenAIGatewayHandler) resolveMultiGroupRouting(c *gin.Context, apiKey *service.APIKey, reqModel string) (blocked bool) {
-	return resolveMultiGroupRoutingCommon(c, apiKey, reqModel, nil)
+	return resolveMultiGroupRoutingCommon(c, apiKey, reqModel, h.groupResolver)
 }

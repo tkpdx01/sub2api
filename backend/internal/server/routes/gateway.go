@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
 	"github.com/Wei-Shaw/sub2api/internal/handler"
@@ -161,10 +162,57 @@ func RegisterGatewayRoutes(
 }
 
 // getGroupPlatform extracts the group platform from the API Key stored in context.
+// For multi-group keys (Group is nil, GroupIDs is non-empty), infers the platform
+// from the request model to enable correct handler routing.
 func getGroupPlatform(c *gin.Context) string {
 	apiKey, ok := middleware.GetAPIKeyFromContext(c)
-	if !ok || apiKey.Group == nil {
+	if !ok {
 		return ""
 	}
-	return apiKey.Group.Platform
+	if apiKey.Group != nil {
+		return apiKey.Group.Platform
+	}
+	// Multi-group key: infer platform from model in request body
+	if len(apiKey.GroupIDs) > 0 {
+		return inferPlatformFromModel(c)
+	}
+	return ""
+}
+
+// inferPlatformFromModel peeks at the "model" field in the JSON request body
+// to determine the target platform. This avoids reading/parsing the full body.
+func inferPlatformFromModel(c *gin.Context) string {
+	// Try to get model from query param first (Gemini style)
+	// For POST JSON bodies, use a lightweight extraction
+	model := strings.ToLower(c.Query("model"))
+	if model == "" {
+		// Peek the request body without consuming it
+		body, exists := c.Get("_request_body_cache")
+		if !exists {
+			// Read and cache the body for later use
+			bodyBytes, err := handler.PeekRequestBody(c)
+			if err != nil || len(bodyBytes) == 0 {
+				return ""
+			}
+			model = handler.ExtractModelFromJSON(bodyBytes)
+		} else if b, ok := body.([]byte); ok {
+			model = handler.ExtractModelFromJSON(b)
+		}
+		model = strings.ToLower(model)
+	}
+
+	switch {
+	case strings.HasPrefix(model, "gpt") ||
+		strings.HasPrefix(model, "o1") ||
+		strings.HasPrefix(model, "o3") ||
+		strings.HasPrefix(model, "o4") ||
+		strings.HasPrefix(model, "chatgpt"):
+		return service.PlatformOpenAI
+	case strings.HasPrefix(model, "gemini"):
+		return service.PlatformGemini
+	case strings.HasPrefix(model, "claude"):
+		return service.PlatformAnthropic
+	default:
+		return ""
+	}
 }
