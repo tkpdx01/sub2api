@@ -753,6 +753,87 @@ func (_u *UsageLogUpdate) SetNillableCacheTTLOverridden(v *bool) *UsageLogUpdate
 	return _u
 }
 
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (_u *UsageLogUpdate) SetConnPickMs(v int) *UsageLogUpdate {
+	_u.mutation.ResetConnPickMs()
+	_u.mutation.SetConnPickMs(v)
+	return _u
+}
+
+// SetNillableConnPickMs sets the "conn_pick_ms" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillableConnPickMs(v *int) *UsageLogUpdate {
+	if v != nil {
+		_u.SetConnPickMs(*v)
+	}
+	return _u
+}
+
+// AddConnPickMs adds value to the "conn_pick_ms" field.
+func (_u *UsageLogUpdate) AddConnPickMs(v int) *UsageLogUpdate {
+	_u.mutation.AddConnPickMs(v)
+	return _u
+}
+
+// ClearConnPickMs clears the value of the "conn_pick_ms" field.
+func (_u *UsageLogUpdate) ClearConnPickMs() *UsageLogUpdate {
+	_u.mutation.ClearConnPickMs()
+	return _u
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (_u *UsageLogUpdate) SetQueueWaitMs(v int) *UsageLogUpdate {
+	_u.mutation.ResetQueueWaitMs()
+	_u.mutation.SetQueueWaitMs(v)
+	return _u
+}
+
+// SetNillableQueueWaitMs sets the "queue_wait_ms" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillableQueueWaitMs(v *int) *UsageLogUpdate {
+	if v != nil {
+		_u.SetQueueWaitMs(*v)
+	}
+	return _u
+}
+
+// AddQueueWaitMs adds value to the "queue_wait_ms" field.
+func (_u *UsageLogUpdate) AddQueueWaitMs(v int) *UsageLogUpdate {
+	_u.mutation.AddQueueWaitMs(v)
+	return _u
+}
+
+// ClearQueueWaitMs clears the value of the "queue_wait_ms" field.
+func (_u *UsageLogUpdate) ClearQueueWaitMs() *UsageLogUpdate {
+	_u.mutation.ClearQueueWaitMs()
+	return _u
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (_u *UsageLogUpdate) SetAccountRecheckMs(v int) *UsageLogUpdate {
+	_u.mutation.ResetAccountRecheckMs()
+	_u.mutation.SetAccountRecheckMs(v)
+	return _u
+}
+
+// SetNillableAccountRecheckMs sets the "account_recheck_ms" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillableAccountRecheckMs(v *int) *UsageLogUpdate {
+	if v != nil {
+		_u.SetAccountRecheckMs(*v)
+	}
+	return _u
+}
+
+// AddAccountRecheckMs adds value to the "account_recheck_ms" field.
+func (_u *UsageLogUpdate) AddAccountRecheckMs(v int) *UsageLogUpdate {
+	_u.mutation.AddAccountRecheckMs(v)
+	return _u
+}
+
+// ClearAccountRecheckMs clears the value of the "account_recheck_ms" field.
+func (_u *UsageLogUpdate) ClearAccountRecheckMs() *UsageLogUpdate {
+	_u.mutation.ClearAccountRecheckMs()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *UsageLogUpdate) SetUser(v *User) *UsageLogUpdate {
 	return _u.SetUserID(v.ID)
@@ -1101,6 +1182,33 @@ func (_u *UsageLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.CacheTTLOverridden(); ok {
 		_spec.SetField(usagelog.FieldCacheTTLOverridden, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.ConnPickMs(); ok {
+		_spec.SetField(usagelog.FieldConnPickMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedConnPickMs(); ok {
+		_spec.AddField(usagelog.FieldConnPickMs, field.TypeInt, value)
+	}
+	if _u.mutation.ConnPickMsCleared() {
+		_spec.ClearField(usagelog.FieldConnPickMs, field.TypeInt)
+	}
+	if value, ok := _u.mutation.QueueWaitMs(); ok {
+		_spec.SetField(usagelog.FieldQueueWaitMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedQueueWaitMs(); ok {
+		_spec.AddField(usagelog.FieldQueueWaitMs, field.TypeInt, value)
+	}
+	if _u.mutation.QueueWaitMsCleared() {
+		_spec.ClearField(usagelog.FieldQueueWaitMs, field.TypeInt)
+	}
+	if value, ok := _u.mutation.AccountRecheckMs(); ok {
+		_spec.SetField(usagelog.FieldAccountRecheckMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAccountRecheckMs(); ok {
+		_spec.AddField(usagelog.FieldAccountRecheckMs, field.TypeInt, value)
+	}
+	if _u.mutation.AccountRecheckMsCleared() {
+		_spec.ClearField(usagelog.FieldAccountRecheckMs, field.TypeInt)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1988,6 +2096,87 @@ func (_u *UsageLogUpdateOne) SetNillableCacheTTLOverridden(v *bool) *UsageLogUpd
 	return _u
 }
 
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (_u *UsageLogUpdateOne) SetConnPickMs(v int) *UsageLogUpdateOne {
+	_u.mutation.ResetConnPickMs()
+	_u.mutation.SetConnPickMs(v)
+	return _u
+}
+
+// SetNillableConnPickMs sets the "conn_pick_ms" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillableConnPickMs(v *int) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetConnPickMs(*v)
+	}
+	return _u
+}
+
+// AddConnPickMs adds value to the "conn_pick_ms" field.
+func (_u *UsageLogUpdateOne) AddConnPickMs(v int) *UsageLogUpdateOne {
+	_u.mutation.AddConnPickMs(v)
+	return _u
+}
+
+// ClearConnPickMs clears the value of the "conn_pick_ms" field.
+func (_u *UsageLogUpdateOne) ClearConnPickMs() *UsageLogUpdateOne {
+	_u.mutation.ClearConnPickMs()
+	return _u
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (_u *UsageLogUpdateOne) SetQueueWaitMs(v int) *UsageLogUpdateOne {
+	_u.mutation.ResetQueueWaitMs()
+	_u.mutation.SetQueueWaitMs(v)
+	return _u
+}
+
+// SetNillableQueueWaitMs sets the "queue_wait_ms" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillableQueueWaitMs(v *int) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetQueueWaitMs(*v)
+	}
+	return _u
+}
+
+// AddQueueWaitMs adds value to the "queue_wait_ms" field.
+func (_u *UsageLogUpdateOne) AddQueueWaitMs(v int) *UsageLogUpdateOne {
+	_u.mutation.AddQueueWaitMs(v)
+	return _u
+}
+
+// ClearQueueWaitMs clears the value of the "queue_wait_ms" field.
+func (_u *UsageLogUpdateOne) ClearQueueWaitMs() *UsageLogUpdateOne {
+	_u.mutation.ClearQueueWaitMs()
+	return _u
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (_u *UsageLogUpdateOne) SetAccountRecheckMs(v int) *UsageLogUpdateOne {
+	_u.mutation.ResetAccountRecheckMs()
+	_u.mutation.SetAccountRecheckMs(v)
+	return _u
+}
+
+// SetNillableAccountRecheckMs sets the "account_recheck_ms" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillableAccountRecheckMs(v *int) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetAccountRecheckMs(*v)
+	}
+	return _u
+}
+
+// AddAccountRecheckMs adds value to the "account_recheck_ms" field.
+func (_u *UsageLogUpdateOne) AddAccountRecheckMs(v int) *UsageLogUpdateOne {
+	_u.mutation.AddAccountRecheckMs(v)
+	return _u
+}
+
+// ClearAccountRecheckMs clears the value of the "account_recheck_ms" field.
+func (_u *UsageLogUpdateOne) ClearAccountRecheckMs() *UsageLogUpdateOne {
+	_u.mutation.ClearAccountRecheckMs()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *UsageLogUpdateOne) SetUser(v *User) *UsageLogUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -2366,6 +2555,33 @@ func (_u *UsageLogUpdateOne) sqlSave(ctx context.Context) (_node *UsageLog, err 
 	}
 	if value, ok := _u.mutation.CacheTTLOverridden(); ok {
 		_spec.SetField(usagelog.FieldCacheTTLOverridden, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.ConnPickMs(); ok {
+		_spec.SetField(usagelog.FieldConnPickMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedConnPickMs(); ok {
+		_spec.AddField(usagelog.FieldConnPickMs, field.TypeInt, value)
+	}
+	if _u.mutation.ConnPickMsCleared() {
+		_spec.ClearField(usagelog.FieldConnPickMs, field.TypeInt)
+	}
+	if value, ok := _u.mutation.QueueWaitMs(); ok {
+		_spec.SetField(usagelog.FieldQueueWaitMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedQueueWaitMs(); ok {
+		_spec.AddField(usagelog.FieldQueueWaitMs, field.TypeInt, value)
+	}
+	if _u.mutation.QueueWaitMsCleared() {
+		_spec.ClearField(usagelog.FieldQueueWaitMs, field.TypeInt)
+	}
+	if value, ok := _u.mutation.AccountRecheckMs(); ok {
+		_spec.SetField(usagelog.FieldAccountRecheckMs, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAccountRecheckMs(); ok {
+		_spec.AddField(usagelog.FieldAccountRecheckMs, field.TypeInt, value)
+	}
+	if _u.mutation.AccountRecheckMsCleared() {
+		_spec.ClearField(usagelog.FieldAccountRecheckMs, field.TypeInt)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

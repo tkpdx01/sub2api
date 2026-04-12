@@ -86,6 +86,12 @@ const (
 	FieldImageSize = "image_size"
 	// FieldCacheTTLOverridden holds the string denoting the cache_ttl_overridden field in the database.
 	FieldCacheTTLOverridden = "cache_ttl_overridden"
+	// FieldConnPickMs holds the string denoting the conn_pick_ms field in the database.
+	FieldConnPickMs = "conn_pick_ms"
+	// FieldQueueWaitMs holds the string denoting the queue_wait_ms field in the database.
+	FieldQueueWaitMs = "queue_wait_ms"
+	// FieldAccountRecheckMs holds the string denoting the account_recheck_ms field in the database.
+	FieldAccountRecheckMs = "account_recheck_ms"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -176,6 +182,9 @@ var Columns = []string{
 	FieldImageCount,
 	FieldImageSize,
 	FieldCacheTTLOverridden,
+	FieldConnPickMs,
+	FieldQueueWaitMs,
+	FieldAccountRecheckMs,
 	FieldCreatedAt,
 }
 
@@ -434,6 +443,21 @@ func ByImageSize(opts ...sql.OrderTermOption) OrderOption {
 // ByCacheTTLOverridden orders the results by the cache_ttl_overridden field.
 func ByCacheTTLOverridden(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCacheTTLOverridden, opts...).ToFunc()
+}
+
+// ByConnPickMs orders the results by the conn_pick_ms field.
+func ByConnPickMs(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConnPickMs, opts...).ToFunc()
+}
+
+// ByQueueWaitMs orders the results by the queue_wait_ms field.
+func ByQueueWaitMs(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldQueueWaitMs, opts...).ToFunc()
+}
+
+// ByAccountRecheckMs orders the results by the account_recheck_ms field.
+func ByAccountRecheckMs(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountRecheckMs, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

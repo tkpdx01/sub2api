@@ -246,12 +246,13 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 	failedAccountIDs := make(map[int64]struct{})
 	sameAccountRetryCount := make(map[int64]int)
 	var lastFailoverErr *service.UpstreamFailoverError
+	recheckCtx, _ := service.WithAccountRecheckTiming(c.Request.Context())
 
 	for {
 		// Select account supporting the requested model
 		reqLog.Debug("openai.account_selecting", zap.Int("excluded_account_count", len(failedAccountIDs)))
 		selection, scheduleDecision, err := h.gatewayService.SelectAccountWithScheduler(
-			c.Request.Context(),
+			recheckCtx,
 			apiKey.GroupID,
 			previousResponseID,
 			sessionHash,
@@ -389,6 +390,9 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
 		clientIP := ip.GetClientIP(c)
 		requestPayloadHash := service.HashUsageRequestPayload(body)
+		connPickMs := getContextOptionalIntMs(c, service.OpsOpenAIWSConnPickMsKey)
+		queueWaitMs := getContextOptionalIntMs(c, service.OpsOpenAIWSQueueWaitMsKey)
+		accountRecheckMs := service.AccountRecheckMs(recheckCtx)
 
 		// 使用量记录通过有界 worker 池提交，避免请求热路径创建无界 goroutine。
 		h.submitUsageRecordTask(func(ctx context.Context) {
@@ -405,6 +409,9 @@ func (h *OpenAIGatewayHandler) Responses(c *gin.Context) {
 				RequestPayloadHash: requestPayloadHash,
 				APIKeyService:      h.apiKeyService,
 				ChannelUsageFields: channelMapping.ToUsageFields(reqModel, result.UpstreamModel),
+				ConnPickMs:         connPickMs,
+				QueueWaitMs:        queueWaitMs,
+				AccountRecheckMs:   accountRecheckMs,
 			}); err != nil {
 				logger.L().With(
 					zap.String("component", "handler.openai_gateway.responses"),
@@ -628,6 +635,7 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 	sameAccountRetryCount := make(map[int64]int)
 	var lastFailoverErr *service.UpstreamFailoverError
 	effectiveMappedModel := preferredMappedModel
+	recheckCtxMsg, _ := service.WithAccountRecheckTiming(c.Request.Context())
 
 	for {
 		currentRoutingModel := routingModel
@@ -636,7 +644,7 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 		}
 		reqLog.Debug("openai_messages.account_selecting", zap.Int("excluded_account_count", len(failedAccountIDs)))
 		selection, scheduleDecision, err := h.gatewayService.SelectAccountWithScheduler(
-			c.Request.Context(),
+			recheckCtxMsg,
 			apiKey.GroupID,
 			"", // no previous_response_id
 			sessionHash,
@@ -759,6 +767,9 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
 		clientIP := ip.GetClientIP(c)
 		requestPayloadHash := service.HashUsageRequestPayload(body)
+		connPickMsMsg := getContextOptionalIntMs(c, service.OpsOpenAIWSConnPickMsKey)
+		queueWaitMsMsg := getContextOptionalIntMs(c, service.OpsOpenAIWSQueueWaitMsKey)
+		accountRecheckMsMsg := service.AccountRecheckMs(recheckCtxMsg)
 
 		h.submitUsageRecordTask(func(ctx context.Context) {
 			if err := h.gatewayService.RecordUsage(ctx, &service.OpenAIRecordUsageInput{
@@ -774,6 +785,9 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 				RequestPayloadHash: requestPayloadHash,
 				APIKeyService:      h.apiKeyService,
 				ChannelUsageFields: channelMappingMsg.ToUsageFields(reqModel, result.UpstreamModel),
+				ConnPickMs:         connPickMsMsg,
+				QueueWaitMs:        queueWaitMsMsg,
+				AccountRecheckMs:   accountRecheckMsMsg,
 			}); err != nil {
 				logger.L().With(
 					zap.String("component", "handler.openai_gateway.messages"),
@@ -1158,8 +1172,9 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 		firstMessage,
 		openAIWSIngressFallbackSessionSeed(subject.UserID, apiKey.ID, apiKey.GroupID),
 	)
+	recheckCtxWS, _ := service.WithAccountRecheckTiming(ctx)
 	selection, scheduleDecision, err := h.gatewayService.SelectAccountWithScheduler(
-		ctx,
+		recheckCtxWS,
 		apiKey.GroupID,
 		previousResponseID,
 		sessionHash,
@@ -1264,6 +1279,9 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 				h.gatewayService.UpdateCodexUsageSnapshotFromHeaders(ctx, account.ID, result.ResponseHeaders)
 			}
 			h.gatewayService.ReportOpenAIAccountScheduleResult(account.ID, true, result.FirstTokenMs)
+			connPickMsWS := getContextOptionalIntMs(c, service.OpsOpenAIWSConnPickMsKey)
+			queueWaitMsWS := getContextOptionalIntMs(c, service.OpsOpenAIWSQueueWaitMsKey)
+			accountRecheckMsWS := service.AccountRecheckMs(recheckCtxWS)
 			h.submitUsageRecordTask(func(taskCtx context.Context) {
 				if err := h.gatewayService.RecordUsage(taskCtx, &service.OpenAIRecordUsageInput{
 					Result:             result,
@@ -1278,6 +1296,9 @@ func (h *OpenAIGatewayHandler) ResponsesWebSocket(c *gin.Context) {
 					RequestPayloadHash: service.HashUsageRequestPayload(firstMessage),
 					APIKeyService:      h.apiKeyService,
 					ChannelUsageFields: channelMappingWS.ToUsageFields(reqModel, result.UpstreamModel),
+					ConnPickMs:         connPickMsWS,
+					QueueWaitMs:        queueWaitMsWS,
+					AccountRecheckMs:   accountRecheckMsWS,
 				}); err != nil {
 					reqLog.Error("openai.websocket_record_usage_failed",
 						zap.Int64("account_id", account.ID),
@@ -1416,6 +1437,15 @@ func getContextInt64(c *gin.Context, key string) (int64, bool) {
 	default:
 		return 0, false
 	}
+}
+
+func getContextOptionalIntMs(c *gin.Context, key string) *int {
+	v, ok := getContextInt64(c, key)
+	if !ok || v < 0 {
+		return nil
+	}
+	i := int(v)
+	return &i
 }
 
 func (h *OpenAIGatewayHandler) submitUsageRecordTask(task service.UsageRecordTask) {

@@ -85,6 +85,9 @@ func TestUsageLogRepositoryCreateSyncRequestTypeAndLegacyFields(t *testing.T) {
 			sqlmock.AnyArg(), // model_mapping_chain
 			sqlmock.AnyArg(), // billing_tier
 			sqlmock.AnyArg(), // billing_mode
+			sqlmock.AnyArg(), // conn_pick_ms
+			sqlmock.AnyArg(), // queue_wait_ms
+			sqlmock.AnyArg(), // account_recheck_ms
 			createdAt,
 		).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).AddRow(int64(99), createdAt))
@@ -163,6 +166,9 @@ func TestUsageLogRepositoryCreate_PersistsServiceTier(t *testing.T) {
 			sqlmock.AnyArg(), // model_mapping_chain
 			sqlmock.AnyArg(), // billing_tier
 			sqlmock.AnyArg(), // billing_mode
+			sqlmock.AnyArg(), // conn_pick_ms
+			sqlmock.AnyArg(), // queue_wait_ms
+			sqlmock.AnyArg(), // account_recheck_ms
 			createdAt,
 		).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).AddRow(int64(100), createdAt))
@@ -487,6 +493,9 @@ func TestScanUsageLogRequestTypeAndLegacyFallback(t *testing.T) {
 			sql.NullString{}, // model_mapping_chain
 			sql.NullString{}, // billing_tier
 			sql.NullString{}, // billing_mode
+			sql.NullInt64{},  // conn_pick_ms
+			sql.NullInt64{},  // queue_wait_ms
+			sql.NullInt64{},  // account_recheck_ms
 			now,
 		}})
 		require.NoError(t, err)
@@ -534,6 +543,9 @@ func TestScanUsageLogRequestTypeAndLegacyFallback(t *testing.T) {
 			sql.NullString{}, // model_mapping_chain
 			sql.NullString{}, // billing_tier
 			sql.NullString{}, // billing_mode
+			sql.NullInt64{},  // conn_pick_ms
+			sql.NullInt64{},  // queue_wait_ms
+			sql.NullInt64{},  // account_recheck_ms
 			now,
 		}})
 		require.NoError(t, err)
@@ -581,6 +593,9 @@ func TestScanUsageLogRequestTypeAndLegacyFallback(t *testing.T) {
 			sql.NullString{}, // model_mapping_chain
 			sql.NullString{}, // billing_tier
 			sql.NullString{}, // billing_mode
+			sql.NullInt64{},  // conn_pick_ms
+			sql.NullInt64{},  // queue_wait_ms
+			sql.NullInt64{},  // account_recheck_ms
 			now,
 		}})
 		require.NoError(t, err)

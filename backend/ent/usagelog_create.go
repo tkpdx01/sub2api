@@ -491,6 +491,48 @@ func (_c *UsageLogCreate) SetNillableCacheTTLOverridden(v *bool) *UsageLogCreate
 	return _c
 }
 
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (_c *UsageLogCreate) SetConnPickMs(v int) *UsageLogCreate {
+	_c.mutation.SetConnPickMs(v)
+	return _c
+}
+
+// SetNillableConnPickMs sets the "conn_pick_ms" field if the given value is not nil.
+func (_c *UsageLogCreate) SetNillableConnPickMs(v *int) *UsageLogCreate {
+	if v != nil {
+		_c.SetConnPickMs(*v)
+	}
+	return _c
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (_c *UsageLogCreate) SetQueueWaitMs(v int) *UsageLogCreate {
+	_c.mutation.SetQueueWaitMs(v)
+	return _c
+}
+
+// SetNillableQueueWaitMs sets the "queue_wait_ms" field if the given value is not nil.
+func (_c *UsageLogCreate) SetNillableQueueWaitMs(v *int) *UsageLogCreate {
+	if v != nil {
+		_c.SetQueueWaitMs(*v)
+	}
+	return _c
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (_c *UsageLogCreate) SetAccountRecheckMs(v int) *UsageLogCreate {
+	_c.mutation.SetAccountRecheckMs(v)
+	return _c
+}
+
+// SetNillableAccountRecheckMs sets the "account_recheck_ms" field if the given value is not nil.
+func (_c *UsageLogCreate) SetNillableAccountRecheckMs(v *int) *UsageLogCreate {
+	if v != nil {
+		_c.SetAccountRecheckMs(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UsageLogCreate) SetCreatedAt(v time.Time) *UsageLogCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -919,6 +961,18 @@ func (_c *UsageLogCreate) createSpec() (*UsageLog, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CacheTTLOverridden(); ok {
 		_spec.SetField(usagelog.FieldCacheTTLOverridden, field.TypeBool, value)
 		_node.CacheTTLOverridden = value
+	}
+	if value, ok := _c.mutation.ConnPickMs(); ok {
+		_spec.SetField(usagelog.FieldConnPickMs, field.TypeInt, value)
+		_node.ConnPickMs = &value
+	}
+	if value, ok := _c.mutation.QueueWaitMs(); ok {
+		_spec.SetField(usagelog.FieldQueueWaitMs, field.TypeInt, value)
+		_node.QueueWaitMs = &value
+	}
+	if value, ok := _c.mutation.AccountRecheckMs(); ok {
+		_spec.SetField(usagelog.FieldAccountRecheckMs, field.TypeInt, value)
+		_node.AccountRecheckMs = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(usagelog.FieldCreatedAt, field.TypeTime, value)
@@ -1688,6 +1742,78 @@ func (u *UsageLogUpsert) SetCacheTTLOverridden(v bool) *UsageLogUpsert {
 // UpdateCacheTTLOverridden sets the "cache_ttl_overridden" field to the value that was provided on create.
 func (u *UsageLogUpsert) UpdateCacheTTLOverridden() *UsageLogUpsert {
 	u.SetExcluded(usagelog.FieldCacheTTLOverridden)
+	return u
+}
+
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (u *UsageLogUpsert) SetConnPickMs(v int) *UsageLogUpsert {
+	u.Set(usagelog.FieldConnPickMs, v)
+	return u
+}
+
+// UpdateConnPickMs sets the "conn_pick_ms" field to the value that was provided on create.
+func (u *UsageLogUpsert) UpdateConnPickMs() *UsageLogUpsert {
+	u.SetExcluded(usagelog.FieldConnPickMs)
+	return u
+}
+
+// AddConnPickMs adds v to the "conn_pick_ms" field.
+func (u *UsageLogUpsert) AddConnPickMs(v int) *UsageLogUpsert {
+	u.Add(usagelog.FieldConnPickMs, v)
+	return u
+}
+
+// ClearConnPickMs clears the value of the "conn_pick_ms" field.
+func (u *UsageLogUpsert) ClearConnPickMs() *UsageLogUpsert {
+	u.SetNull(usagelog.FieldConnPickMs)
+	return u
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (u *UsageLogUpsert) SetQueueWaitMs(v int) *UsageLogUpsert {
+	u.Set(usagelog.FieldQueueWaitMs, v)
+	return u
+}
+
+// UpdateQueueWaitMs sets the "queue_wait_ms" field to the value that was provided on create.
+func (u *UsageLogUpsert) UpdateQueueWaitMs() *UsageLogUpsert {
+	u.SetExcluded(usagelog.FieldQueueWaitMs)
+	return u
+}
+
+// AddQueueWaitMs adds v to the "queue_wait_ms" field.
+func (u *UsageLogUpsert) AddQueueWaitMs(v int) *UsageLogUpsert {
+	u.Add(usagelog.FieldQueueWaitMs, v)
+	return u
+}
+
+// ClearQueueWaitMs clears the value of the "queue_wait_ms" field.
+func (u *UsageLogUpsert) ClearQueueWaitMs() *UsageLogUpsert {
+	u.SetNull(usagelog.FieldQueueWaitMs)
+	return u
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (u *UsageLogUpsert) SetAccountRecheckMs(v int) *UsageLogUpsert {
+	u.Set(usagelog.FieldAccountRecheckMs, v)
+	return u
+}
+
+// UpdateAccountRecheckMs sets the "account_recheck_ms" field to the value that was provided on create.
+func (u *UsageLogUpsert) UpdateAccountRecheckMs() *UsageLogUpsert {
+	u.SetExcluded(usagelog.FieldAccountRecheckMs)
+	return u
+}
+
+// AddAccountRecheckMs adds v to the "account_recheck_ms" field.
+func (u *UsageLogUpsert) AddAccountRecheckMs(v int) *UsageLogUpsert {
+	u.Add(usagelog.FieldAccountRecheckMs, v)
+	return u
+}
+
+// ClearAccountRecheckMs clears the value of the "account_recheck_ms" field.
+func (u *UsageLogUpsert) ClearAccountRecheckMs() *UsageLogUpsert {
+	u.SetNull(usagelog.FieldAccountRecheckMs)
 	return u
 }
 
@@ -2468,6 +2594,90 @@ func (u *UsageLogUpsertOne) SetCacheTTLOverridden(v bool) *UsageLogUpsertOne {
 func (u *UsageLogUpsertOne) UpdateCacheTTLOverridden() *UsageLogUpsertOne {
 	return u.Update(func(s *UsageLogUpsert) {
 		s.UpdateCacheTTLOverridden()
+	})
+}
+
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (u *UsageLogUpsertOne) SetConnPickMs(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetConnPickMs(v)
+	})
+}
+
+// AddConnPickMs adds v to the "conn_pick_ms" field.
+func (u *UsageLogUpsertOne) AddConnPickMs(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddConnPickMs(v)
+	})
+}
+
+// UpdateConnPickMs sets the "conn_pick_ms" field to the value that was provided on create.
+func (u *UsageLogUpsertOne) UpdateConnPickMs() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateConnPickMs()
+	})
+}
+
+// ClearConnPickMs clears the value of the "conn_pick_ms" field.
+func (u *UsageLogUpsertOne) ClearConnPickMs() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearConnPickMs()
+	})
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (u *UsageLogUpsertOne) SetQueueWaitMs(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetQueueWaitMs(v)
+	})
+}
+
+// AddQueueWaitMs adds v to the "queue_wait_ms" field.
+func (u *UsageLogUpsertOne) AddQueueWaitMs(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddQueueWaitMs(v)
+	})
+}
+
+// UpdateQueueWaitMs sets the "queue_wait_ms" field to the value that was provided on create.
+func (u *UsageLogUpsertOne) UpdateQueueWaitMs() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateQueueWaitMs()
+	})
+}
+
+// ClearQueueWaitMs clears the value of the "queue_wait_ms" field.
+func (u *UsageLogUpsertOne) ClearQueueWaitMs() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearQueueWaitMs()
+	})
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (u *UsageLogUpsertOne) SetAccountRecheckMs(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetAccountRecheckMs(v)
+	})
+}
+
+// AddAccountRecheckMs adds v to the "account_recheck_ms" field.
+func (u *UsageLogUpsertOne) AddAccountRecheckMs(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddAccountRecheckMs(v)
+	})
+}
+
+// UpdateAccountRecheckMs sets the "account_recheck_ms" field to the value that was provided on create.
+func (u *UsageLogUpsertOne) UpdateAccountRecheckMs() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateAccountRecheckMs()
+	})
+}
+
+// ClearAccountRecheckMs clears the value of the "account_recheck_ms" field.
+func (u *UsageLogUpsertOne) ClearAccountRecheckMs() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearAccountRecheckMs()
 	})
 }
 
@@ -3414,6 +3624,90 @@ func (u *UsageLogUpsertBulk) SetCacheTTLOverridden(v bool) *UsageLogUpsertBulk {
 func (u *UsageLogUpsertBulk) UpdateCacheTTLOverridden() *UsageLogUpsertBulk {
 	return u.Update(func(s *UsageLogUpsert) {
 		s.UpdateCacheTTLOverridden()
+	})
+}
+
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (u *UsageLogUpsertBulk) SetConnPickMs(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetConnPickMs(v)
+	})
+}
+
+// AddConnPickMs adds v to the "conn_pick_ms" field.
+func (u *UsageLogUpsertBulk) AddConnPickMs(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddConnPickMs(v)
+	})
+}
+
+// UpdateConnPickMs sets the "conn_pick_ms" field to the value that was provided on create.
+func (u *UsageLogUpsertBulk) UpdateConnPickMs() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateConnPickMs()
+	})
+}
+
+// ClearConnPickMs clears the value of the "conn_pick_ms" field.
+func (u *UsageLogUpsertBulk) ClearConnPickMs() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearConnPickMs()
+	})
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (u *UsageLogUpsertBulk) SetQueueWaitMs(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetQueueWaitMs(v)
+	})
+}
+
+// AddQueueWaitMs adds v to the "queue_wait_ms" field.
+func (u *UsageLogUpsertBulk) AddQueueWaitMs(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddQueueWaitMs(v)
+	})
+}
+
+// UpdateQueueWaitMs sets the "queue_wait_ms" field to the value that was provided on create.
+func (u *UsageLogUpsertBulk) UpdateQueueWaitMs() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateQueueWaitMs()
+	})
+}
+
+// ClearQueueWaitMs clears the value of the "queue_wait_ms" field.
+func (u *UsageLogUpsertBulk) ClearQueueWaitMs() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearQueueWaitMs()
+	})
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (u *UsageLogUpsertBulk) SetAccountRecheckMs(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetAccountRecheckMs(v)
+	})
+}
+
+// AddAccountRecheckMs adds v to the "account_recheck_ms" field.
+func (u *UsageLogUpsertBulk) AddAccountRecheckMs(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddAccountRecheckMs(v)
+	})
+}
+
+// UpdateAccountRecheckMs sets the "account_recheck_ms" field to the value that was provided on create.
+func (u *UsageLogUpsertBulk) UpdateAccountRecheckMs() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateAccountRecheckMs()
+	})
+}
+
+// ClearAccountRecheckMs clears the value of the "account_recheck_ms" field.
+func (u *UsageLogUpsertBulk) ClearAccountRecheckMs() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.ClearAccountRecheckMs()
 	})
 }
 

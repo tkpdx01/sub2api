@@ -1665,6 +1665,35 @@ func (s *OpenAIGatewayService) resolveFreshSchedulableOpenAIAccount(ctx context.
 	return fresh
 }
 
+// accountRecheckMsContextKey is used to accumulate recheck duration across
+// multiple calls within a single SelectAccountWithLoadAwareness invocation.
+type accountRecheckMsContextKey struct{}
+
+// WithAccountRecheckTiming returns a context and a pointer to an int64 that
+// accumulates the total time (milliseconds) spent in recheckSelectedOpenAIAccountFromDB.
+func WithAccountRecheckTiming(ctx context.Context) (context.Context, *int64) {
+	acc := new(int64)
+	return context.WithValue(ctx, accountRecheckMsContextKey{}, acc), acc
+}
+
+// AccountRecheckMs reads the accumulated recheck timing from the context.
+// Returns nil if timing was not enabled.
+func AccountRecheckMs(ctx context.Context) *int {
+	v, _ := ctx.Value(accountRecheckMsContextKey{}).(*int64)
+	if v == nil {
+		return nil
+	}
+	ms := int(atomic.LoadInt64(v))
+	if ms <= 0 {
+		return nil
+	}
+	return &ms
+}
+
+// softRecheckFreshnessThreshold 是快照被认为"足够新"的时间阈值。
+// 快照在此窗口内时，跳过同步 DB 查询，仅做内存检查。
+const softRecheckFreshnessThreshold = 5 * time.Second
+
 func (s *OpenAIGatewayService) recheckSelectedOpenAIAccountFromDB(ctx context.Context, account *Account, requestedModel string) *Account {
 	if account == nil {
 		return nil
@@ -1673,7 +1702,22 @@ func (s *OpenAIGatewayService) recheckSelectedOpenAIAccountFromDB(ctx context.Co
 		return account
 	}
 
+	// 快照足够新时，跳过同步 DB 查询，仅做内存硬检查
+	if s.schedulerSnapshot.FreshnessWithin(softRecheckFreshnessThreshold) {
+		if !account.IsSchedulable() || !account.IsOpenAI() {
+			return nil
+		}
+		if requestedModel != "" && !account.IsModelSupported(requestedModel) {
+			return nil
+		}
+		return account
+	}
+
+	start := time.Now()
 	latest, err := s.accountRepo.GetByID(ctx, account.ID)
+	if acc, _ := ctx.Value(accountRecheckMsContextKey{}).(*int64); acc != nil {
+		atomic.AddInt64(acc, time.Since(start).Milliseconds())
+	}
 	if err != nil || latest == nil {
 		return nil
 	}
@@ -4407,6 +4451,10 @@ type OpenAIRecordUsageInput struct {
 	RequestPayloadHash string
 	APIKeyService      APIKeyQuotaUpdater
 	ChannelUsageFields
+	// TTFT 可观测性字段（从 gin context 提取后传入）
+	ConnPickMs       *int
+	QueueWaitMs      *int
+	AccountRecheckMs *int
 }
 
 // RecordUsage records usage and deducts balance
@@ -4561,6 +4609,10 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 	if input.IPAddress != "" {
 		usageLog.IPAddress = &input.IPAddress
 	}
+	// TTFT 可观测性字段
+	usageLog.ConnPickMs = input.ConnPickMs
+	usageLog.QueueWaitMs = input.QueueWaitMs
+	usageLog.AccountRecheckMs = input.AccountRecheckMs
 
 	if apiKey.GroupID != nil {
 		usageLog.GroupID = apiKey.GroupID

@@ -25013,6 +25013,12 @@ type UsageLogMutation struct {
 	addimage_count              *int
 	image_size                  *string
 	cache_ttl_overridden        *bool
+	conn_pick_ms                *int
+	addconn_pick_ms             *int
+	queue_wait_ms               *int
+	addqueue_wait_ms            *int
+	account_recheck_ms          *int
+	addaccount_recheck_ms       *int
 	created_at                  *time.Time
 	clearedFields               map[string]struct{}
 	user                        *int64
@@ -26990,6 +26996,216 @@ func (m *UsageLogMutation) ResetCacheTTLOverridden() {
 	m.cache_ttl_overridden = nil
 }
 
+// SetConnPickMs sets the "conn_pick_ms" field.
+func (m *UsageLogMutation) SetConnPickMs(i int) {
+	m.conn_pick_ms = &i
+	m.addconn_pick_ms = nil
+}
+
+// ConnPickMs returns the value of the "conn_pick_ms" field in the mutation.
+func (m *UsageLogMutation) ConnPickMs() (r int, exists bool) {
+	v := m.conn_pick_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConnPickMs returns the old "conn_pick_ms" field's value of the UsageLog entity.
+// If the UsageLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UsageLogMutation) OldConnPickMs(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConnPickMs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConnPickMs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConnPickMs: %w", err)
+	}
+	return oldValue.ConnPickMs, nil
+}
+
+// AddConnPickMs adds i to the "conn_pick_ms" field.
+func (m *UsageLogMutation) AddConnPickMs(i int) {
+	if m.addconn_pick_ms != nil {
+		*m.addconn_pick_ms += i
+	} else {
+		m.addconn_pick_ms = &i
+	}
+}
+
+// AddedConnPickMs returns the value that was added to the "conn_pick_ms" field in this mutation.
+func (m *UsageLogMutation) AddedConnPickMs() (r int, exists bool) {
+	v := m.addconn_pick_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearConnPickMs clears the value of the "conn_pick_ms" field.
+func (m *UsageLogMutation) ClearConnPickMs() {
+	m.conn_pick_ms = nil
+	m.addconn_pick_ms = nil
+	m.clearedFields[usagelog.FieldConnPickMs] = struct{}{}
+}
+
+// ConnPickMsCleared returns if the "conn_pick_ms" field was cleared in this mutation.
+func (m *UsageLogMutation) ConnPickMsCleared() bool {
+	_, ok := m.clearedFields[usagelog.FieldConnPickMs]
+	return ok
+}
+
+// ResetConnPickMs resets all changes to the "conn_pick_ms" field.
+func (m *UsageLogMutation) ResetConnPickMs() {
+	m.conn_pick_ms = nil
+	m.addconn_pick_ms = nil
+	delete(m.clearedFields, usagelog.FieldConnPickMs)
+}
+
+// SetQueueWaitMs sets the "queue_wait_ms" field.
+func (m *UsageLogMutation) SetQueueWaitMs(i int) {
+	m.queue_wait_ms = &i
+	m.addqueue_wait_ms = nil
+}
+
+// QueueWaitMs returns the value of the "queue_wait_ms" field in the mutation.
+func (m *UsageLogMutation) QueueWaitMs() (r int, exists bool) {
+	v := m.queue_wait_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldQueueWaitMs returns the old "queue_wait_ms" field's value of the UsageLog entity.
+// If the UsageLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UsageLogMutation) OldQueueWaitMs(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldQueueWaitMs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldQueueWaitMs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldQueueWaitMs: %w", err)
+	}
+	return oldValue.QueueWaitMs, nil
+}
+
+// AddQueueWaitMs adds i to the "queue_wait_ms" field.
+func (m *UsageLogMutation) AddQueueWaitMs(i int) {
+	if m.addqueue_wait_ms != nil {
+		*m.addqueue_wait_ms += i
+	} else {
+		m.addqueue_wait_ms = &i
+	}
+}
+
+// AddedQueueWaitMs returns the value that was added to the "queue_wait_ms" field in this mutation.
+func (m *UsageLogMutation) AddedQueueWaitMs() (r int, exists bool) {
+	v := m.addqueue_wait_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearQueueWaitMs clears the value of the "queue_wait_ms" field.
+func (m *UsageLogMutation) ClearQueueWaitMs() {
+	m.queue_wait_ms = nil
+	m.addqueue_wait_ms = nil
+	m.clearedFields[usagelog.FieldQueueWaitMs] = struct{}{}
+}
+
+// QueueWaitMsCleared returns if the "queue_wait_ms" field was cleared in this mutation.
+func (m *UsageLogMutation) QueueWaitMsCleared() bool {
+	_, ok := m.clearedFields[usagelog.FieldQueueWaitMs]
+	return ok
+}
+
+// ResetQueueWaitMs resets all changes to the "queue_wait_ms" field.
+func (m *UsageLogMutation) ResetQueueWaitMs() {
+	m.queue_wait_ms = nil
+	m.addqueue_wait_ms = nil
+	delete(m.clearedFields, usagelog.FieldQueueWaitMs)
+}
+
+// SetAccountRecheckMs sets the "account_recheck_ms" field.
+func (m *UsageLogMutation) SetAccountRecheckMs(i int) {
+	m.account_recheck_ms = &i
+	m.addaccount_recheck_ms = nil
+}
+
+// AccountRecheckMs returns the value of the "account_recheck_ms" field in the mutation.
+func (m *UsageLogMutation) AccountRecheckMs() (r int, exists bool) {
+	v := m.account_recheck_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountRecheckMs returns the old "account_recheck_ms" field's value of the UsageLog entity.
+// If the UsageLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UsageLogMutation) OldAccountRecheckMs(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountRecheckMs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountRecheckMs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountRecheckMs: %w", err)
+	}
+	return oldValue.AccountRecheckMs, nil
+}
+
+// AddAccountRecheckMs adds i to the "account_recheck_ms" field.
+func (m *UsageLogMutation) AddAccountRecheckMs(i int) {
+	if m.addaccount_recheck_ms != nil {
+		*m.addaccount_recheck_ms += i
+	} else {
+		m.addaccount_recheck_ms = &i
+	}
+}
+
+// AddedAccountRecheckMs returns the value that was added to the "account_recheck_ms" field in this mutation.
+func (m *UsageLogMutation) AddedAccountRecheckMs() (r int, exists bool) {
+	v := m.addaccount_recheck_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAccountRecheckMs clears the value of the "account_recheck_ms" field.
+func (m *UsageLogMutation) ClearAccountRecheckMs() {
+	m.account_recheck_ms = nil
+	m.addaccount_recheck_ms = nil
+	m.clearedFields[usagelog.FieldAccountRecheckMs] = struct{}{}
+}
+
+// AccountRecheckMsCleared returns if the "account_recheck_ms" field was cleared in this mutation.
+func (m *UsageLogMutation) AccountRecheckMsCleared() bool {
+	_, ok := m.clearedFields[usagelog.FieldAccountRecheckMs]
+	return ok
+}
+
+// ResetAccountRecheckMs resets all changes to the "account_recheck_ms" field.
+func (m *UsageLogMutation) ResetAccountRecheckMs() {
+	m.account_recheck_ms = nil
+	m.addaccount_recheck_ms = nil
+	delete(m.clearedFields, usagelog.FieldAccountRecheckMs)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UsageLogMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -27195,7 +27411,7 @@ func (m *UsageLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UsageLogMutation) Fields() []string {
-	fields := make([]string, 0, 37)
+	fields := make([]string, 0, 40)
 	if m.user != nil {
 		fields = append(fields, usagelog.FieldUserID)
 	}
@@ -27304,6 +27520,15 @@ func (m *UsageLogMutation) Fields() []string {
 	if m.cache_ttl_overridden != nil {
 		fields = append(fields, usagelog.FieldCacheTTLOverridden)
 	}
+	if m.conn_pick_ms != nil {
+		fields = append(fields, usagelog.FieldConnPickMs)
+	}
+	if m.queue_wait_ms != nil {
+		fields = append(fields, usagelog.FieldQueueWaitMs)
+	}
+	if m.account_recheck_ms != nil {
+		fields = append(fields, usagelog.FieldAccountRecheckMs)
+	}
 	if m.created_at != nil {
 		fields = append(fields, usagelog.FieldCreatedAt)
 	}
@@ -27387,6 +27612,12 @@ func (m *UsageLogMutation) Field(name string) (ent.Value, bool) {
 		return m.ImageSize()
 	case usagelog.FieldCacheTTLOverridden:
 		return m.CacheTTLOverridden()
+	case usagelog.FieldConnPickMs:
+		return m.ConnPickMs()
+	case usagelog.FieldQueueWaitMs:
+		return m.QueueWaitMs()
+	case usagelog.FieldAccountRecheckMs:
+		return m.AccountRecheckMs()
 	case usagelog.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -27470,6 +27701,12 @@ func (m *UsageLogMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldImageSize(ctx)
 	case usagelog.FieldCacheTTLOverridden:
 		return m.OldCacheTTLOverridden(ctx)
+	case usagelog.FieldConnPickMs:
+		return m.OldConnPickMs(ctx)
+	case usagelog.FieldQueueWaitMs:
+		return m.OldQueueWaitMs(ctx)
+	case usagelog.FieldAccountRecheckMs:
+		return m.OldAccountRecheckMs(ctx)
 	case usagelog.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -27733,6 +27970,27 @@ func (m *UsageLogMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCacheTTLOverridden(v)
 		return nil
+	case usagelog.FieldConnPickMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConnPickMs(v)
+		return nil
+	case usagelog.FieldQueueWaitMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetQueueWaitMs(v)
+		return nil
+	case usagelog.FieldAccountRecheckMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountRecheckMs(v)
+		return nil
 	case usagelog.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -27805,6 +28063,15 @@ func (m *UsageLogMutation) AddedFields() []string {
 	if m.addimage_count != nil {
 		fields = append(fields, usagelog.FieldImageCount)
 	}
+	if m.addconn_pick_ms != nil {
+		fields = append(fields, usagelog.FieldConnPickMs)
+	}
+	if m.addqueue_wait_ms != nil {
+		fields = append(fields, usagelog.FieldQueueWaitMs)
+	}
+	if m.addaccount_recheck_ms != nil {
+		fields = append(fields, usagelog.FieldAccountRecheckMs)
+	}
 	return fields
 }
 
@@ -27851,6 +28118,12 @@ func (m *UsageLogMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedFirstTokenMs()
 	case usagelog.FieldImageCount:
 		return m.AddedImageCount()
+	case usagelog.FieldConnPickMs:
+		return m.AddedConnPickMs()
+	case usagelog.FieldQueueWaitMs:
+		return m.AddedQueueWaitMs()
+	case usagelog.FieldAccountRecheckMs:
+		return m.AddedAccountRecheckMs()
 	}
 	return nil, false
 }
@@ -27993,6 +28266,27 @@ func (m *UsageLogMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddImageCount(v)
 		return nil
+	case usagelog.FieldConnPickMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddConnPickMs(v)
+		return nil
+	case usagelog.FieldQueueWaitMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddQueueWaitMs(v)
+		return nil
+	case usagelog.FieldAccountRecheckMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAccountRecheckMs(v)
+		return nil
 	}
 	return fmt.Errorf("unknown UsageLog numeric field %s", name)
 }
@@ -28042,6 +28336,15 @@ func (m *UsageLogMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(usagelog.FieldImageSize) {
 		fields = append(fields, usagelog.FieldImageSize)
+	}
+	if m.FieldCleared(usagelog.FieldConnPickMs) {
+		fields = append(fields, usagelog.FieldConnPickMs)
+	}
+	if m.FieldCleared(usagelog.FieldQueueWaitMs) {
+		fields = append(fields, usagelog.FieldQueueWaitMs)
+	}
+	if m.FieldCleared(usagelog.FieldAccountRecheckMs) {
+		fields = append(fields, usagelog.FieldAccountRecheckMs)
 	}
 	return fields
 }
@@ -28098,6 +28401,15 @@ func (m *UsageLogMutation) ClearField(name string) error {
 		return nil
 	case usagelog.FieldImageSize:
 		m.ClearImageSize()
+		return nil
+	case usagelog.FieldConnPickMs:
+		m.ClearConnPickMs()
+		return nil
+	case usagelog.FieldQueueWaitMs:
+		m.ClearQueueWaitMs()
+		return nil
+	case usagelog.FieldAccountRecheckMs:
+		m.ClearAccountRecheckMs()
 		return nil
 	}
 	return fmt.Errorf("unknown UsageLog nullable field %s", name)
@@ -28214,6 +28526,15 @@ func (m *UsageLogMutation) ResetField(name string) error {
 		return nil
 	case usagelog.FieldCacheTTLOverridden:
 		m.ResetCacheTTLOverridden()
+		return nil
+	case usagelog.FieldConnPickMs:
+		m.ResetConnPickMs()
+		return nil
+	case usagelog.FieldQueueWaitMs:
+		m.ResetQueueWaitMs()
+		return nil
+	case usagelog.FieldAccountRecheckMs:
+		m.ResetAccountRecheckMs()
 		return nil
 	case usagelog.FieldCreatedAt:
 		m.ResetCreatedAt()

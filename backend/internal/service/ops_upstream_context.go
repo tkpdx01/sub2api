@@ -30,8 +30,9 @@ const (
 	// OpenAI WS 关键观测字段
 	OpsOpenAIWSQueueWaitMsKey = "ops_openai_ws_queue_wait_ms"
 	OpsOpenAIWSConnPickMsKey  = "ops_openai_ws_conn_pick_ms"
-	OpsOpenAIWSConnReusedKey  = "ops_openai_ws_conn_reused"
+	OpsOpenAIWSConnReusedKey   = "ops_openai_ws_conn_reused"
 	OpsOpenAIWSConnIDKey      = "ops_openai_ws_conn_id"
+	OpsAccountRecheckMsKey    = "ops_account_recheck_ms"
 
 	// OpsSkipPassthroughKey 由 applyErrorPassthroughRule 在命中 skip_monitoring=true 的规则时设置。
 	// ops_error_logger 中间件检查此 key，为 true 时跳过错误记录。

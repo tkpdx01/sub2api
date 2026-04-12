@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/redis/go-redis/v9"
@@ -367,18 +368,31 @@ func (c *concurrencyCache) GetAccountWaitingCount(ctx context.Context, accountID
 	return val, nil
 }
 
+// GetAccountsLoadBatch 批量获取多个账号的负载信息。
+// 如果 context 中包含 SharedRedisServerTime（由 RPM batch 写入），则复用该时间，
+// 避免额外的 TIME RTT。
 func (c *concurrencyCache) GetAccountsLoadBatch(ctx context.Context, accounts []service.AccountWithConcurrency) (map[int64]*service.AccountLoadInfo, error) {
 	if len(accounts) == 0 {
 		return map[int64]*service.AccountLoadInfo{}, nil
 	}
 
+	var now time.Time
+	if serverTime, ok := service.SharedServerTimeFromContext(ctx); ok {
+		now = serverTime
+	} else {
+		t, err := c.rdb.Time(ctx).Result()
+		if err != nil {
+			return nil, fmt.Errorf("redis TIME: %w", err)
+		}
+		now = t
+	}
+	return c.getAccountsLoadBatchWithTime(ctx, accounts, now)
+}
+
+func (c *concurrencyCache) getAccountsLoadBatchWithTime(ctx context.Context, accounts []service.AccountWithConcurrency, serverTime time.Time) (map[int64]*service.AccountLoadInfo, error) {
 	// 使用 Pipeline 替代 Lua 脚本，兼容 Redis Cluster（Lua 内动态拼 key 会 CROSSSLOT）。
 	// 每个账号执行 3 个命令：ZREMRANGEBYSCORE（清理过期）、ZCARD（并发数）、GET（等待数）。
-	now, err := c.rdb.Time(ctx).Result()
-	if err != nil {
-		return nil, fmt.Errorf("redis TIME: %w", err)
-	}
-	cutoffTime := now.Unix() - int64(c.slotTTLSeconds)
+	cutoffTime := serverTime.Unix() - int64(c.slotTTLSeconds)
 
 	pipe := c.rdb.Pipeline()
 

@@ -108,6 +108,10 @@ func (s *helperConcurrencyCacheStub) GetAccountsLoadBatch(ctx context.Context, a
 	return out, nil
 }
 
+func (s *helperConcurrencyCacheStub) GetAccountsLoadBatchWithServerTime(ctx context.Context, accounts []service.AccountWithConcurrency, serverTime time.Time) (map[int64]*service.AccountLoadInfo, error) {
+	return s.GetAccountsLoadBatch(ctx, accounts)
+}
+
 func (s *helperConcurrencyCacheStub) GetUsersLoadBatch(ctx context.Context, users []service.UserWithConcurrency) (map[int64]*service.UserLoadInfo, error) {
 	out := make(map[int64]*service.UserLoadInfo, len(users))
 	for _, user := range users {

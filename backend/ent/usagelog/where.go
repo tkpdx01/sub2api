@@ -235,6 +235,21 @@ func CacheTTLOverridden(v bool) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldCacheTTLOverridden, v))
 }
 
+// ConnPickMs applies equality check predicate on the "conn_pick_ms" field. It's identical to ConnPickMsEQ.
+func ConnPickMs(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldConnPickMs, v))
+}
+
+// QueueWaitMs applies equality check predicate on the "queue_wait_ms" field. It's identical to QueueWaitMsEQ.
+func QueueWaitMs(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldQueueWaitMs, v))
+}
+
+// AccountRecheckMs applies equality check predicate on the "account_recheck_ms" field. It's identical to AccountRecheckMsEQ.
+func AccountRecheckMs(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldAccountRecheckMs, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldCreatedAt, v))
@@ -1908,6 +1923,156 @@ func CacheTTLOverriddenEQ(v bool) predicate.UsageLog {
 // CacheTTLOverriddenNEQ applies the NEQ predicate on the "cache_ttl_overridden" field.
 func CacheTTLOverriddenNEQ(v bool) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldNEQ(FieldCacheTTLOverridden, v))
+}
+
+// ConnPickMsEQ applies the EQ predicate on the "conn_pick_ms" field.
+func ConnPickMsEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldConnPickMs, v))
+}
+
+// ConnPickMsNEQ applies the NEQ predicate on the "conn_pick_ms" field.
+func ConnPickMsNEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldConnPickMs, v))
+}
+
+// ConnPickMsIn applies the In predicate on the "conn_pick_ms" field.
+func ConnPickMsIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldConnPickMs, vs...))
+}
+
+// ConnPickMsNotIn applies the NotIn predicate on the "conn_pick_ms" field.
+func ConnPickMsNotIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldConnPickMs, vs...))
+}
+
+// ConnPickMsGT applies the GT predicate on the "conn_pick_ms" field.
+func ConnPickMsGT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGT(FieldConnPickMs, v))
+}
+
+// ConnPickMsGTE applies the GTE predicate on the "conn_pick_ms" field.
+func ConnPickMsGTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGTE(FieldConnPickMs, v))
+}
+
+// ConnPickMsLT applies the LT predicate on the "conn_pick_ms" field.
+func ConnPickMsLT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLT(FieldConnPickMs, v))
+}
+
+// ConnPickMsLTE applies the LTE predicate on the "conn_pick_ms" field.
+func ConnPickMsLTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLTE(FieldConnPickMs, v))
+}
+
+// ConnPickMsIsNil applies the IsNil predicate on the "conn_pick_ms" field.
+func ConnPickMsIsNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIsNull(FieldConnPickMs))
+}
+
+// ConnPickMsNotNil applies the NotNil predicate on the "conn_pick_ms" field.
+func ConnPickMsNotNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotNull(FieldConnPickMs))
+}
+
+// QueueWaitMsEQ applies the EQ predicate on the "queue_wait_ms" field.
+func QueueWaitMsEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldQueueWaitMs, v))
+}
+
+// QueueWaitMsNEQ applies the NEQ predicate on the "queue_wait_ms" field.
+func QueueWaitMsNEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldQueueWaitMs, v))
+}
+
+// QueueWaitMsIn applies the In predicate on the "queue_wait_ms" field.
+func QueueWaitMsIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldQueueWaitMs, vs...))
+}
+
+// QueueWaitMsNotIn applies the NotIn predicate on the "queue_wait_ms" field.
+func QueueWaitMsNotIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldQueueWaitMs, vs...))
+}
+
+// QueueWaitMsGT applies the GT predicate on the "queue_wait_ms" field.
+func QueueWaitMsGT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGT(FieldQueueWaitMs, v))
+}
+
+// QueueWaitMsGTE applies the GTE predicate on the "queue_wait_ms" field.
+func QueueWaitMsGTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGTE(FieldQueueWaitMs, v))
+}
+
+// QueueWaitMsLT applies the LT predicate on the "queue_wait_ms" field.
+func QueueWaitMsLT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLT(FieldQueueWaitMs, v))
+}
+
+// QueueWaitMsLTE applies the LTE predicate on the "queue_wait_ms" field.
+func QueueWaitMsLTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLTE(FieldQueueWaitMs, v))
+}
+
+// QueueWaitMsIsNil applies the IsNil predicate on the "queue_wait_ms" field.
+func QueueWaitMsIsNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIsNull(FieldQueueWaitMs))
+}
+
+// QueueWaitMsNotNil applies the NotNil predicate on the "queue_wait_ms" field.
+func QueueWaitMsNotNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotNull(FieldQueueWaitMs))
+}
+
+// AccountRecheckMsEQ applies the EQ predicate on the "account_recheck_ms" field.
+func AccountRecheckMsEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldAccountRecheckMs, v))
+}
+
+// AccountRecheckMsNEQ applies the NEQ predicate on the "account_recheck_ms" field.
+func AccountRecheckMsNEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldAccountRecheckMs, v))
+}
+
+// AccountRecheckMsIn applies the In predicate on the "account_recheck_ms" field.
+func AccountRecheckMsIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldAccountRecheckMs, vs...))
+}
+
+// AccountRecheckMsNotIn applies the NotIn predicate on the "account_recheck_ms" field.
+func AccountRecheckMsNotIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldAccountRecheckMs, vs...))
+}
+
+// AccountRecheckMsGT applies the GT predicate on the "account_recheck_ms" field.
+func AccountRecheckMsGT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGT(FieldAccountRecheckMs, v))
+}
+
+// AccountRecheckMsGTE applies the GTE predicate on the "account_recheck_ms" field.
+func AccountRecheckMsGTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGTE(FieldAccountRecheckMs, v))
+}
+
+// AccountRecheckMsLT applies the LT predicate on the "account_recheck_ms" field.
+func AccountRecheckMsLT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLT(FieldAccountRecheckMs, v))
+}
+
+// AccountRecheckMsLTE applies the LTE predicate on the "account_recheck_ms" field.
+func AccountRecheckMsLTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLTE(FieldAccountRecheckMs, v))
+}
+
+// AccountRecheckMsIsNil applies the IsNil predicate on the "account_recheck_ms" field.
+func AccountRecheckMsIsNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIsNull(FieldAccountRecheckMs))
+}
+
+// AccountRecheckMsNotNil applies the NotNil predicate on the "account_recheck_ms" field.
+func AccountRecheckMsNotNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotNull(FieldAccountRecheckMs))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

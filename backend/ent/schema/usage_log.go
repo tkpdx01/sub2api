@@ -138,6 +138,17 @@ func (UsageLog) Fields() []ent.Field {
 		field.Bool("cache_ttl_overridden").
 			Default(false),
 
+		// TTFT 可观测性字段（WS 连接池 + 调度诊断）
+		field.Int("conn_pick_ms").
+			Optional().
+			Nillable(),
+		field.Int("queue_wait_ms").
+			Optional().
+			Nillable(),
+		field.Int("account_recheck_ms").
+			Optional().
+			Nillable(),
+
 		// 时间戳（只有 created_at，日志不可修改）
 		field.Time("created_at").
 			Default(time.Now).

@@ -13,5 +13,6 @@ type RPMCache interface {
 	GetRPM(ctx context.Context, accountID int64) (count int, err error)
 
 	// GetRPMBatch 批量获取多个账号的 RPM 计数（使用 Pipeline）
+	// 如果 context 中包含 SharedRedisServerTime，则复用该时间避免额外的 TIME RTT。
 	GetRPMBatch(ctx context.Context, accountIDs []int64) (map[int64]int, error)
 }

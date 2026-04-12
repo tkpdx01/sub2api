@@ -106,17 +106,31 @@ func (c *RPMCacheImpl) GetRPM(ctx context.Context, accountID int64) (int, error)
 }
 
 // GetRPMBatch 批量获取多个账号的 RPM 计数（使用 Pipeline）
+// 如果 context 中包含 SharedRedisServerTime，则复用该时间避免额外的 TIME RTT。
+// 否则调用 TIME 后写入 context，供后续 GetAccountsLoadBatch 复用。
 func (c *RPMCacheImpl) GetRPMBatch(ctx context.Context, accountIDs []int64) (map[int64]int, error) {
 	if len(accountIDs) == 0 {
 		return map[int64]int{}, nil
 	}
 
-	// 获取当前分钟后缀
-	minuteSuffix, err := c.currentMinuteSuffix(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("rpm batch get: %w", err)
+	var minuteSuffix string
+	if serverTime, ok := service.SharedServerTimeFromContext(ctx); ok {
+		minuteTS := serverTime.Unix() / 60
+		minuteSuffix = strconv.FormatInt(minuteTS, 10)
+	} else {
+		serverTime, err := c.rdb.Time(ctx).Result()
+		if err != nil {
+			return nil, fmt.Errorf("rpm batch get: redis TIME: %w", err)
+		}
+		minuteTS := serverTime.Unix() / 60
+		minuteSuffix = strconv.FormatInt(minuteTS, 10)
+		service.SetSharedRedisServerTime(ctx, serverTime)
 	}
 
+	return c.getRPMBatchWithMinuteSuffix(ctx, accountIDs, minuteSuffix)
+}
+
+func (c *RPMCacheImpl) getRPMBatchWithMinuteSuffix(ctx context.Context, accountIDs []int64, minuteSuffix string) (map[int64]int, error) {
 	// 使用 Pipeline 批量 GET
 	pipe := c.rdb.Pipeline()
 	cmds := make(map[int64]*redis.StringCmd, len(accountIDs))

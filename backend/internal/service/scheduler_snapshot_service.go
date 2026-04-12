@@ -21,17 +21,19 @@ var (
 const outboxEventTimeout = 2 * time.Minute
 
 type SchedulerSnapshotService struct {
-	cache         SchedulerCache
-	outboxRepo    SchedulerOutboxRepository
-	accountRepo   AccountRepository
-	groupRepo     GroupRepository
-	cfg           *config.Config
-	stopCh        chan struct{}
-	stopOnce      sync.Once
-	wg            sync.WaitGroup
-	fallbackLimit *fallbackLimiter
-	lagMu         sync.Mutex
-	lagFailures   int
+	cache           SchedulerCache
+	outboxRepo      SchedulerOutboxRepository
+	accountRepo     AccountRepository
+	groupRepo       GroupRepository
+	cfg             *config.Config
+	stopCh          chan struct{}
+	stopOnce        sync.Once
+	wg              sync.WaitGroup
+	fallbackLimit   *fallbackLimiter
+	lagMu           sync.Mutex
+	lagFailures     int
+	refreshMu       sync.RWMutex
+	lastRefreshedAt time.Time // last successful outbox poll or full rebuild
 }
 
 func NewSchedulerSnapshotService(
@@ -54,6 +56,23 @@ func NewSchedulerSnapshotService(
 		stopCh:        make(chan struct{}),
 		fallbackLimit: newFallbackLimiter(maxQPS),
 	}
+}
+
+// FreshnessWithin returns true if the snapshot was refreshed within the given duration.
+func (s *SchedulerSnapshotService) FreshnessWithin(d time.Duration) bool {
+	if s == nil {
+		return false
+	}
+	s.refreshMu.RLock()
+	t := s.lastRefreshedAt
+	s.refreshMu.RUnlock()
+	return !t.IsZero() && time.Since(t) < d
+}
+
+func (s *SchedulerSnapshotService) markRefreshed() {
+	s.refreshMu.Lock()
+	s.lastRefreshedAt = time.Now()
+	s.refreshMu.Unlock()
 }
 
 func (s *SchedulerSnapshotService) Start() {
@@ -260,6 +279,7 @@ func (s *SchedulerSnapshotService) pollOutbox() {
 	} else {
 		watermarkForCheck = lastID
 	}
+	s.markRefreshed()
 
 	s.checkOutboxLag(ctx, events[0], watermarkForCheck)
 }
@@ -548,7 +568,11 @@ func (s *SchedulerSnapshotService) triggerFullRebuild(reason string) error {
 			return err
 		}
 	}
-	return s.rebuildBuckets(ctx, buckets, reason)
+	err = s.rebuildBuckets(ctx, buckets, reason)
+	if err == nil {
+		s.markRefreshed()
+	}
+	return err
 }
 
 func (s *SchedulerSnapshotService) checkOutboxLag(ctx context.Context, oldest SchedulerOutboxEvent, watermark int64) {

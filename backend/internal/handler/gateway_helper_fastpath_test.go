@@ -81,6 +81,10 @@ func (m *concurrencyCacheMock) GetAccountsLoadBatch(ctx context.Context, account
 	return map[int64]*service.AccountLoadInfo{}, nil
 }
 
+func (m *concurrencyCacheMock) GetAccountsLoadBatchWithServerTime(ctx context.Context, accounts []service.AccountWithConcurrency, serverTime time.Time) (map[int64]*service.AccountLoadInfo, error) {
+	return m.GetAccountsLoadBatch(ctx, accounts)
+}
+
 func (m *concurrencyCacheMock) GetUsersLoadBatch(ctx context.Context, users []service.UserWithConcurrency) (map[int64]*service.UserLoadInfo, error) {
 	return map[int64]*service.UserLoadInfo{}, nil
 }

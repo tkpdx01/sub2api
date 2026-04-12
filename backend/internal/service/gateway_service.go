@@ -1327,6 +1327,7 @@ func (s *GatewayService) SelectAccountWithLoadAwareness(ctx context.Context, gro
 		return nil, ErrNoAvailableAccounts
 	}
 	ctx = s.withWindowCostPrefetch(ctx, accounts)
+	ctx = WithSharedRedisServerTime(ctx) // RPM batch 写入 server time，load batch 复用
 	ctx = s.withRPMPrefetch(ctx, accounts)
 
 	isExcluded := func(accountID int64) bool {
@@ -2395,7 +2396,39 @@ func rpmFromPrefetchContext(ctx context.Context, accountID int64) (int, bool) {
 	return 0, false
 }
 
+// SharedRedisServerTimeKey stores a mutable *time.Time in context.
+// RPM batch writes the server time after fetching it; load batch reads it.
+// This avoids redundant TIME RTTs across batch operations in the same selection cycle.
+type SharedRedisServerTimeKey struct{}
+
+// WithSharedRedisServerTime returns a new context with a mutable server time slot.
+// Repository-layer code writes to this slot after calling TIME, and subsequent
+// operations read from it to avoid extra RTTs.
+func WithSharedRedisServerTime(ctx context.Context) context.Context {
+	return context.WithValue(ctx, SharedRedisServerTimeKey{}, new(time.Time))
+}
+
+// SetSharedRedisServerTime stores a Redis server time into the context slot.
+func SetSharedRedisServerTime(ctx context.Context, t time.Time) {
+	if p, ok := ctx.Value(SharedRedisServerTimeKey{}).(*time.Time); ok && p != nil {
+		*p = t
+	}
+}
+
+// SharedServerTimeFromContext retrieves the pre-fetched Redis server time.
+// Returns zero time and false if not yet set.
+func SharedServerTimeFromContext(ctx context.Context) (time.Time, bool) {
+	p, ok := ctx.Value(SharedRedisServerTimeKey{}).(*time.Time)
+	if !ok || p == nil || p.IsZero() {
+		return time.Time{}, false
+	}
+	return *p, true
+}
+
 // withRPMPrefetch 批量预取所有候选账号的 RPM 计数
+// GetRPMBatch 内部会检查 context 中的 SharedRedisServerTimeKey，
+// 有则复用，无则自行调用 TIME。成功后把 server time 写入 context，
+// 供后续 GetAccountsLoadBatch 复用。
 func (s *GatewayService) withRPMPrefetch(ctx context.Context, accounts []Account) context.Context {
 	if s.rpmCache == nil {
 		return ctx
@@ -2973,6 +3006,7 @@ func (s *GatewayService) selectAccountForModelWithPlatform(ctx context.Context, 
 
 	// 批量预取窗口费用+RPM 计数，避免逐个账号查询（N+1）
 	ctx = s.withWindowCostPrefetch(ctx, accounts)
+	ctx = WithSharedRedisServerTime(ctx) // RPM batch 写入 server time，load batch 复用
 	ctx = s.withRPMPrefetch(ctx, accounts)
 
 	// 3. 按优先级+最久未用选择（考虑模型支持）
@@ -3231,6 +3265,7 @@ func (s *GatewayService) selectAccountWithMixedScheduling(ctx context.Context, g
 
 	// 批量预取窗口费用+RPM 计数，避免逐个账号查询（N+1）
 	ctx = s.withWindowCostPrefetch(ctx, accounts)
+	ctx = WithSharedRedisServerTime(ctx) // RPM batch 写入 server time，load batch 复用
 	ctx = s.withRPMPrefetch(ctx, accounts)
 
 	// 3. 按优先级+最久未用选择（考虑模型支持和混合调度）
@@ -7383,6 +7418,11 @@ type RecordUsageInput struct {
 	APIKeyService      APIKeyQuotaUpdater // 可选：用于更新API Key配额
 
 	ChannelUsageFields // 渠道映射信息（由 handler 在 Forward 前解析）
+
+	// TTFT 可观测性字段（从 gin context 提取后传入）
+	ConnPickMs       *int
+	QueueWaitMs      *int
+	AccountRecheckMs *int
 }
 
 // APIKeyQuotaUpdater defines the interface for updating API Key quota and rate limit usage
@@ -7706,6 +7746,9 @@ func (s *GatewayService) RecordUsage(ctx context.Context, input *RecordUsageInpu
 		ForceCacheBilling:  input.ForceCacheBilling,
 		APIKeyService:      input.APIKeyService,
 		ChannelUsageFields: input.ChannelUsageFields,
+		ConnPickMs:         input.ConnPickMs,
+		QueueWaitMs:        input.QueueWaitMs,
+		AccountRecheckMs:   input.AccountRecheckMs,
 	}, &recordUsageOpts{
 		EnableClaudePath: true,
 	})
@@ -7768,6 +7811,10 @@ type recordUsageCoreInput struct {
 	ForceCacheBilling  bool
 	APIKeyService      APIKeyQuotaUpdater
 	ChannelUsageFields
+	// TTFT 可观测性字段
+	ConnPickMs       *int
+	QueueWaitMs      *int
+	AccountRecheckMs *int
 }
 
 // recordUsageCore 是 RecordUsage 和 RecordUsageWithLongContext 的统一实现。
@@ -8055,6 +8102,9 @@ func (s *GatewayService) buildRecordUsageLog(
 		usageLog.TotalCost = cost.TotalCost
 		usageLog.ActualCost = cost.ActualCost
 	}
+	usageLog.ConnPickMs = input.ConnPickMs
+	usageLog.QueueWaitMs = input.QueueWaitMs
+	usageLog.AccountRecheckMs = input.AccountRecheckMs
 
 	return usageLog
 }

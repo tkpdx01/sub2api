@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -83,6 +84,9 @@ func (c *stubConcurrencyCacheForTest) DecrementWaitCount(_ context.Context, _ in
 }
 func (c *stubConcurrencyCacheForTest) GetAccountsLoadBatch(_ context.Context, _ []AccountWithConcurrency) (map[int64]*AccountLoadInfo, error) {
 	return c.loadBatch, c.loadBatchErr
+}
+func (c *stubConcurrencyCacheForTest) GetAccountsLoadBatchWithServerTime(_ context.Context, accounts []AccountWithConcurrency, _ time.Time) (map[int64]*AccountLoadInfo, error) {
+	return c.GetAccountsLoadBatch(context.Background(), accounts)
 }
 func (c *stubConcurrencyCacheForTest) GetUsersLoadBatch(_ context.Context, _ []UserWithConcurrency) (map[int64]*UserLoadInfo, error) {
 	return c.usersLoadBatch, c.usersLoadErr

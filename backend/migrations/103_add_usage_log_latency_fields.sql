@@ -1,0 +1,3 @@
+ALTER TABLE usage_logs ADD COLUMN IF NOT EXISTS conn_pick_ms INTEGER;
+ALTER TABLE usage_logs ADD COLUMN IF NOT EXISTS queue_wait_ms INTEGER;
+ALTER TABLE usage_logs ADD COLUMN IF NOT EXISTS account_recheck_ms INTEGER;

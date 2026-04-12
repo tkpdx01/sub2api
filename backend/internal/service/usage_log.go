@@ -153,7 +153,11 @@ type UsageLog struct {
 	OpenAIWSMode bool
 	DurationMs   *int
 	FirstTokenMs *int
-	UserAgent    *string
+	// TTFT 可观测性：WS 连接池 + 调度诊断
+	ConnPickMs       *int // WS 连接池选取耗时
+	QueueWaitMs      *int // WS 队列等待耗时
+	AccountRecheckMs *int // 选号后 DB recheck 耗时
+	UserAgent        *string
 	IPAddress    *string
 
 	// Cache TTL Override 标记（管理员强制替换了缓存 TTL 计费）

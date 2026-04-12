@@ -38,6 +38,7 @@ type ConcurrencyCache interface {
 	DecrementWaitCount(ctx context.Context, userID int64) error
 
 	// 批量负载查询（只读）
+	// 如果 context 中包含 SharedRedisServerTime，则复用该时间避免额外的 TIME RTT。
 	GetAccountsLoadBatch(ctx context.Context, accounts []AccountWithConcurrency) (map[int64]*AccountLoadInfo, error)
 	GetUsersLoadBatch(ctx context.Context, users []UserWithConcurrency) (map[int64]*UserLoadInfo, error)
 
