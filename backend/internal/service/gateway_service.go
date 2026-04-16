@@ -7663,9 +7663,11 @@ func detachedBillingContext(ctx context.Context) (context.Context, context.Cance
 }
 
 func detachStreamUpstreamContext(ctx context.Context, stream bool) (context.Context, context.CancelFunc) {
-	if !stream {
-		return ctx, func() {}
-	}
+	// Always detach from the client context so that a client disconnect
+	// does not cancel the in-flight upstream request. For long-running
+	// models (e.g. Opus with thinking), the upstream may take 2+ minutes;
+	// if the client gives up early the request would be aborted, wasting
+	// the tokens and compute already consumed.
 	if ctx == nil {
 		return context.Background(), func() {}
 	}
